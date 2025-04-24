@@ -36,10 +36,6 @@ class RegisterSerializer(serializers.Serializer):
         write_only=True,
         required=True,
     )
-    phone = serializers.CharField(
-        required=True,
-        validators=[UniqueValidator(queryset=get_user_model().objects.all())],
-    )
     email = serializers.EmailField(
         required=True,
         validators=[UniqueValidator(queryset=get_user_model().objects.all())],

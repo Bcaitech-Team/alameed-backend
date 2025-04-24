@@ -195,7 +195,7 @@ SIMPLE_JWT = {
 REST_USE_JWT = True
 
 REST_AUTH_REGISTER_SERIALIZERS = {
-    # "REGISTER_SERIALIZER": "apps.users.api.serializers.RegisterOrGetUserSerializer",
+    "REGISTER_SERIALIZER": "src.apps.users.api.serializers.RegisterSerializer",
 }
 
 REST_AUTH_SERIALIZERS = {
