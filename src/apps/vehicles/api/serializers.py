@@ -76,8 +76,113 @@ class VehicleDetailSerializer(serializers.ModelSerializer):
 
 
 class VehicleCreateUpdateSerializer(serializers.ModelSerializer):
-    """Serializer for creating and updating vehicles"""
+    """Serializer for creating and updating vehicles with images"""
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=True,
+        min_length=1,  # Enforce at least one image
+    )
+    captions = serializers.ListField(
+        child=serializers.CharField(required=False, allow_blank=True),
+        write_only=True,
+        required=False,
+    )
+    primary_image_index = serializers.IntegerField(
+        write_only=True,
+        required=False,
+        default=0,
+        min_value=0,
+    )
 
     class Meta:
         model = Vehicle
         fields = '__all__'
+
+    def validate(self, data):
+        """Validate that images are provided and primary_image_index is valid"""
+        images = data.get('images', [])
+        primary_index = data.get('primary_image_index', 0)
+
+        if not images:
+            raise serializers.ValidationError({"images": "At least one image is required."})
+
+        if primary_index >= len(images):
+            raise serializers.ValidationError(
+                {"primary_image_index": f"Primary image index must be less than {len(images)}"}
+            )
+
+        # Ensure captions match the number of images if provided
+        captions = data.get('captions', [])
+        if captions and len(captions) != len(images):
+            raise serializers.ValidationError(
+                {"captions": f"Number of captions ({len(captions)}) must match number of images ({len(images)})"}
+            )
+
+        return data
+
+    def create(self, validated_data):
+        """Create vehicle and associated images"""
+        # Extract image data
+        images = validated_data.pop('images', [])
+        captions = validated_data.pop('captions', [])
+        primary_index = validated_data.pop('primary_image_index', 0)
+
+        # Extract features if present (handle many-to-many relationship)
+        features = validated_data.pop('features', None)
+
+        # Create the vehicle instance
+        vehicle = Vehicle.objects.create(**validated_data)
+
+        # Handle many-to-many relationship for features
+        if features is not None:
+            vehicle.features.set(features)
+
+        # Create vehicle images
+        for i, image_data in enumerate(images):
+            caption = captions[i] if i < len(captions) else ""
+            VehicleImage.objects.create(
+                vehicle=vehicle,
+                image=image_data,
+                caption=caption,
+                is_primary=(i == primary_index)
+            )
+
+        return vehicle
+
+    def update(self, instance, validated_data):
+        """Update vehicle and handle image updates if provided"""
+        # Extract image data if present
+        images = validated_data.pop('images', None)
+        captions = validated_data.pop('captions', [])
+        primary_index = validated_data.pop('primary_image_index', 0)
+
+        # Extract features if present (handle many-to-many relationship)
+        features = validated_data.pop('features', None)
+
+        # Update the vehicle instance with the remaining data
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Handle many-to-many relationship for features
+        if features is not None:
+            instance.features.set(features)
+
+        # If images are provided, handle them
+        if images is not None:
+            # Optionally, delete existing images
+            # instance.images.all().delete()  # Uncomment if you want to replace all images
+
+            # Create new vehicle images
+            for i, image_data in enumerate(images):
+                caption = captions[i] if i < len(captions) else ""
+                VehicleImage.objects.create(
+                    vehicle=instance,
+                    image=image_data,
+                    caption=caption,
+                    is_primary=(i == primary_index)
+                )
+
+        return instance
+

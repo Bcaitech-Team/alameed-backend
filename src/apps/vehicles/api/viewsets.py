@@ -72,6 +72,7 @@ class VehicleViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     ]
     search_fields = ['model', 'color', 'brand__name']
     ordering_fields = ['price', 'year', 'created_at']
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -105,7 +106,6 @@ class VehicleViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
 
         serializer = VehicleListSerializer(vehicles, many=True)
         return Response(serializer.data)
-
 
 class VehicleImageViewSet(viewsets.ModelViewSet):
     """
