@@ -302,9 +302,7 @@ class Command(BaseCommand):
                 primary_material=primary_material,
                 accent_material=accent_material,
                 time_slot=time_slot,
-                customer_name=customer['name'],
-                customer_phone=customer['phone'],
-                customer_email=customer['email'],
+                user_id=1,
                 status=status,
                 total_price=total_price,
                 deposit_paid=total_price * Decimal('0.2'),  # 20% deposit

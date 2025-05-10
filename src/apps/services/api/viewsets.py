@@ -214,8 +214,8 @@ class UpholsteryBookingViewSet(viewsets.ModelViewSet):
     """ViewSet for upholstery bookings"""
     queryset = UpholsteryBooking.objects.all()
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['status', 'vehicle_make', 'vehicle_model']
-    search_fields = ['customer_name', 'customer_phone', 'customer_email', 'vehicle_make', 'vehicle_model']
+    filterset_fields = ['status', ]
+    search_fields = ['user__first_name']
     permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer_class(self):

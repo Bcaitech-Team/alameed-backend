@@ -115,11 +115,14 @@ class UpholsteryBookingDetailSerializer(serializers.ModelSerializer):
             'primary_material', 'primary_material_name',
             'accent_material', 'accent_material_name',
             'time_slot', 'time_slot_details',
-            'customer_name', 'customer_phone', 'customer_email',
+            'user',
             'booking_date', 'status', 'status_display',
             'total_price', 'deposit_paid', 'notes',
             'created_at', 'updated_at', 'completed_at',
             'images'
+        ]
+        read_only_fields = [
+            'user'
         ]
 
     def get_accent_material_name(self, obj):
@@ -140,6 +143,7 @@ class UpholsteryBookingDetailSerializer(serializers.ModelSerializer):
         return None
 
 
+
 class UpholsteryBookingCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating bookings"""
 
@@ -147,7 +151,7 @@ class UpholsteryBookingCreateSerializer(serializers.ModelSerializer):
         model = UpholsteryBooking
         fields = [
             'upholstery_type', 'primary_material', 'accent_material',
-            'customer_name', 'customer_phone', 'customer_email', 'time_slot',
+            'user', 'time_slot',
             'notes', "seats"
         ]
 
@@ -194,3 +198,13 @@ class UpholsteryBookingCreateSerializer(serializers.ModelSerializer):
 
         # Create and return the booking
         return super().create(validated_data)
+
+    def save(self, **kwargs):
+        """Override save to set user"""
+        super().save(**kwargs)
+
+        # Set the user to the current authenticated user
+        if not self.instance.user:
+            print("11", self.context['request'].user)
+            self.instance.user = self.context['request'].user
+            self.instance.save()

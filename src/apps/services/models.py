@@ -1,5 +1,6 @@
 import decimal
 
+from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -169,9 +170,13 @@ class UpholsteryBooking(models.Model):
     )
 
     # Customer info
-    customer_name = models.CharField(_("Customer Name"), max_length=100)
-    customer_phone = models.CharField(_("Phone Number"), max_length=20)
-    customer_email = models.EmailField(_("Email"), blank=True)
+    user = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name="upholstery_bookings",
+        blank=True,
+        null=True
+    )
 
     # Booking details
     booking_date = models.DateTimeField(_("Booking Date"), auto_now_add=True)
