@@ -1,3 +1,5 @@
+import decimal
+
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -215,7 +217,8 @@ class UpholsteryBooking(models.Model):
 
         # If there's an accent material, add a portion of its cost
         if self.accent_material:
-            accent_cost = self.accent_material.price_per_seat * seats * 0.3  # Assuming accent is 30% of the upholstery
+            accent_cost = self.accent_material.price_per_seat * seats * decimal.Decimal(
+                0.3)  # Assuming accent is 30% of the upholstery
             total = base_price + material_cost + accent_cost
         else:
             total = base_price + material_cost

@@ -137,8 +137,6 @@ class ServiceTimeSlotViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def bulk_create(self, request):
         """Create multiple time slots at once (admin only)"""
-        # Check admin permission
-        self.check_admin_permission(request)
 
         # Validate data
         location_id = request.data.get('location')
