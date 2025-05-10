@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData
 
 
@@ -50,7 +51,7 @@ class VehicleListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'brand', 'brand_name', 'model', 'year', 'price', 'currency',
             'body_type', 'color', 'mileage', 'engine_type', 'transmission',
-            'condition', 'is_featured', 'primary_image',"is_negotiable"
+            'condition', 'is_featured', 'primary_image', "is_negotiable", "created_at"
         ]
 
     def get_primary_image(self, obj):
