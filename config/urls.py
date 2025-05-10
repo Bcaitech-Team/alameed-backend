@@ -21,6 +21,9 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from src.apps.reviews.api.viewsets import VehicleReviewViewSet
+from src.apps.services.api.viewsets import UpholsteryMaterialViewSet, UpholsteryTypeViewSet, \
+    UpholsteryGalleryImageViewSet, ServiceLocationViewSet, ServiceTimeSlotViewSet, UpholsteryBookingViewSet, \
+    BookingImageViewSet
 from src.apps.vehicles.api.viewsets import BrandViewSet, FeatureViewSet, VehicleTypeViewSet, VehicleImageViewSet, \
     VehicleViewSet, InquiryDataViewSet
 
@@ -32,6 +35,14 @@ router.register('vehicles/vehicles', VehicleViewSet)
 router.register('vehicles/vehicle-images', VehicleImageViewSet)
 router.register('vehicles/inquiries', InquiryDataViewSet)
 router.register('reviews/vehicle-review', VehicleReviewViewSet)
+router.register('services/upholstery/materials', UpholsteryMaterialViewSet, basename='api-material')
+router.register('services/upholstery/types', UpholsteryTypeViewSet, basename='api-type')
+router.register('services/upholstery/gallery', UpholsteryGalleryImageViewSet, basename='api-gallery')
+router.register('services/upholstery/locations', ServiceLocationViewSet, basename='api-location')
+router.register('services/upholstery/time-slots', ServiceTimeSlotViewSet, basename='api-timeslot')
+router.register('services/upholstery/bookings', UpholsteryBookingViewSet, basename='api-booking')
+router.register('services/upholstery/booking-images', BookingImageViewSet, basename='api-booking-image')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

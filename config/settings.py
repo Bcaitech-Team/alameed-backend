@@ -19,7 +19,6 @@ import tldextract
 from django.utils.encoding import force_str, smart_str
 from django.utils.translation import gettext, gettext_lazy
 
-
 django.utils.encoding.smart_text = smart_str
 django.utils.encoding.force_text = force_str
 django.utils.translation.ugettext = gettext
@@ -66,6 +65,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'src.apps.vehicles',
     'src.apps.reviews',
+    'src.apps.services',
 
 ]
 
