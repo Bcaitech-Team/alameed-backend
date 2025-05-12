@@ -201,7 +201,7 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 }
 
 REST_AUTH_SERIALIZERS = {
-    # "USER_DETAILS_SERIALIZER": "apps.users.api.serializers.UserDetailsSerializer",
+    "USER_DETAILS_SERIALIZER": "src.apps.users.api.serializers.UserDetailsSerializer",
     # "LOGIN_SERIALIZER": "apps.users.api.serializers.CustomLoginSerializer",
     # "PASSWORD_RESET_SERIALIZER": "src.apps.authentication.custom_account.api.serializers.CustomPasswordResetSerializer",  # noqa
 }
