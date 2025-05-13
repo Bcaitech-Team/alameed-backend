@@ -103,3 +103,21 @@ class ChatMessage(models.Model):
         if end.exists():
             messages = messages.filter(index__lt=end[0].index)
         return messages
+
+
+class ContactMessage(models.Model):
+    first_name = models.CharField(max_length=100, verbose_name="First Name")
+    last_name = models.CharField(max_length=100, verbose_name="Last Name")
+    email = models.EmailField(verbose_name="Email")
+    phone = models.CharField(max_length=20, verbose_name="Phone")
+    message = models.TextField(verbose_name="Message")
+    created_at = models.DateTimeField(default=timezone.now)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Contact Message"
+        verbose_name_plural = "Contact Messages"
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} - {self.created_at.strftime('%Y-%m-%d')}"

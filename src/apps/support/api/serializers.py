@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_auth.serializers import UserDetailsSerializer
 from rest_framework import serializers
 
-from ..models import ChatMessage, ChatFile, Ticket
+from ..models import ChatMessage, ChatFile, Ticket, ContactMessage
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,3 +48,10 @@ class TicketSerializer(serializers.ModelSerializer):
         validated_data['user'] = self.context['request'].user
         validated_data["status"] = "open"
         return super().create(validated_data)
+
+
+class ContactMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = "__all__"
+        read_only_fields = ['created_at', "is_read"]

@@ -3,8 +3,8 @@ from rest_framework import filters, viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .serializers import ChatMessageSerializer, FileSerializer, TicketSerializer
-from ..models import ChatMessage, ChatFile, Ticket
+from .serializers import ChatMessageSerializer, FileSerializer, TicketSerializer, ContactMessageSerializer
+from ..models import ChatMessage, ChatFile, Ticket, ContactMessage
 
 
 class ChatMessageViewSet(viewsets.ModelViewSet):
@@ -88,3 +88,12 @@ class HeartbeatViewSet(viewsets.ViewSet):
 
     def list(self, request):
         return Response({"status": "ok"}, status=status.HTTP_200_OK)
+
+
+class ContactMessageViewSet(viewsets.ModelViewSet):
+    """
+    Class representing a contact messages viewset
+    """
+
+    serializer_class = ContactMessageSerializer
+    queryset = ContactMessage.objects.all()
