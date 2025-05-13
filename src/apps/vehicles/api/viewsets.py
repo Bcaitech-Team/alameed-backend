@@ -1,10 +1,11 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
-from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData
+from rest_framework.response import Response
+
+from core.mixins import AdminOnlyMixin
 from .serializers import (
     BrandSerializer,
     VehicleTypeSerializer,
@@ -15,7 +16,7 @@ from .serializers import (
     VehicleImageSerializer,
     InquiryDataSerializer
 )
-from core.mixins import AdminOnlyMixin, IsAdminUserOrReadOnly
+from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData
 
 
 class BrandViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
@@ -68,7 +69,7 @@ class VehicleViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = [
         'brand', 'year', 'body_type', 'engine_type',
-        'transmission', 'condition', 'is_featured'
+        'transmission', 'condition', 'is_featured', 'for_rent',
     ]
     search_fields = ['model', 'color', 'brand__name']
     ordering_fields = ['price', 'year', 'created_at']

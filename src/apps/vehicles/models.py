@@ -1,5 +1,3 @@
-from django.db import models
-
 # Create your models here.
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -87,6 +85,7 @@ class Vehicle(models.Model):
     is_featured = models.BooleanField(_("Featured"), default=False)
     is_active = models.BooleanField(_("Active"), default=True)
     is_negotiable = models.BooleanField(_("Negotiable"), default=False)
+    for_rent = models.BooleanField(_("For Rent"), default=False)
 
     class Meta:
         ordering = ['-created_at']
