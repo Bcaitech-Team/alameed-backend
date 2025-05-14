@@ -20,6 +20,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
+from src.apps.rental.api.viewsets import RentalViewSet
 from src.apps.reviews.api.viewsets import VehicleReviewViewSet
 from src.apps.services.api.viewsets import UpholsteryMaterialViewSet, UpholsteryTypeViewSet, \
     UpholsteryGalleryImageViewSet, ServiceLocationViewSet, ServiceTimeSlotViewSet, UpholsteryBookingViewSet, \
@@ -46,6 +47,7 @@ router.register('services/upholstery/booking-images', BookingImageViewSet, basen
 router.register(r'support/tickets', TicketViewSet, basename='ticket')
 router.register(r'support/messages', ChatMessageViewSet, basename='chatmessage')
 router.register(r'support/contact', ContactMessageViewSet, basename='contact')
+router.register(r'rentals/rentals', RentalViewSet, basename='rental')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

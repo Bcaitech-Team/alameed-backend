@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'src.apps.reviews',
     'src.apps.services',
     'src.apps.support',
+    'src.apps.rental',
 
 ]
 
