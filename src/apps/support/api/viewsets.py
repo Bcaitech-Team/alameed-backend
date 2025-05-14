@@ -97,3 +97,4 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
 
     serializer_class = ContactMessageSerializer
     queryset = ContactMessage.objects.all()
+    permission_classes = [permissions.AllowAny]
