@@ -24,7 +24,7 @@ from src.apps.rental.api.viewsets import RentalViewSet
 from src.apps.reviews.api.viewsets import VehicleReviewViewSet
 from src.apps.services.api.viewsets import UpholsteryMaterialViewSet, UpholsteryTypeViewSet, \
     UpholsteryGalleryImageViewSet, ServiceLocationViewSet, ServiceTimeSlotViewSet, UpholsteryBookingViewSet, \
-    BookingImageViewSet
+    BookingImageViewSet, UpholsteryMaterialTypesViewSet, UpholsteryCarModelsViewSet
 from src.apps.support.api.viewsets import TicketViewSet, ChatMessageViewSet, ContactMessageViewSet
 from src.apps.vehicles.api.viewsets import BrandViewSet, FeatureViewSet, VehicleTypeViewSet, VehicleImageViewSet, \
     VehicleViewSet, InquiryDataViewSet
@@ -48,6 +48,8 @@ router.register(r'support/tickets', TicketViewSet, basename='ticket')
 router.register(r'support/messages', ChatMessageViewSet, basename='chatmessage')
 router.register(r'support/contact', ContactMessageViewSet, basename='contact')
 router.register(r'rentals/rentals', RentalViewSet, basename='rental')
+router.register(r'services/upholstery/car-models', UpholsteryCarModelsViewSet)
+router.register(r'services/upholstery/material-types', UpholsteryMaterialTypesViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

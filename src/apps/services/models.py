@@ -1,5 +1,3 @@
-import decimal
-
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -122,6 +120,31 @@ class ServiceTimeSlot(models.Model):
         return self.current_bookings < self.max_bookings
 
 
+class UpholsteryCarModels(models.Model):
+    name = models.CharField(_("Car Model Name"), max_length=100)
+
+    class Meta:
+        verbose_name = _("Upholstery Car Model")
+        verbose_name_plural = _("Upholstery Car Models")
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class UpholsteryMaterialTypes(models.Model):
+    name = models.CharField(_("Material Type Name"), max_length=100)
+    image = models.ImageField(_("Material Type Image"), upload_to='upholstery/material_types/', blank=True, null=True)
+
+    class Meta:
+        verbose_name = _("Upholstery Material Type")
+        verbose_name_plural = _("Upholstery Material Types")
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class UpholsteryBooking(models.Model):
     """Bookings for upholstery services"""
     # Status choices
@@ -145,29 +168,40 @@ class UpholsteryBooking(models.Model):
     #     on_delete=models.CASCADE,
     #     related_name="upholstery_bookings"
     # )
-    seats = models.PositiveSmallIntegerField(_("Number of Seats"), default=1)
-    upholstery_type = models.ForeignKey(
-        UpholsteryType,
-        on_delete=models.PROTECT,
-        related_name="bookings"
-    )
+    # seats = models.PositiveSmallIntegerField(_("Number of Seats"), default=1)
+    # upholstery_type = models.ForeignKey(
+    #     UpholsteryType,
+    #     on_delete=models.PROTECT,
+    #     related_name="bookings"
+    # )
     primary_material = models.ForeignKey(
         UpholsteryMaterial,
         on_delete=models.PROTECT,
         related_name="primary_bookings"
     )
-    accent_material = models.ForeignKey(
-        UpholsteryMaterial,
+    material_type = models.ForeignKey(
+        UpholsteryMaterialTypes,
         on_delete=models.PROTECT,
-        related_name="accent_bookings",
-        blank=True,
-        null=True
+        related_name="material_bookings"
     )
-    time_slot = models.ForeignKey(
-        ServiceTimeSlot,
+    car_model = models.ForeignKey(
+        UpholsteryCarModels,
         on_delete=models.PROTECT,
-        related_name="bookings"
+        related_name="model_bookings",
+
     )
+    # accent_material = models.ForeignKey(
+    #     UpholsteryMaterial,
+    #     on_delete=models.PROTECT,
+    #     related_name="accent_bookings",
+    #     blank=True,
+    #     null=True
+    # )
+    # time_slot = models.ForeignKey(
+    #     ServiceTimeSlot,
+    #     on_delete=models.PROTECT,
+    #     related_name="bookings"
+    # )
 
     # Customer info
     user = models.ForeignKey(
@@ -179,16 +213,16 @@ class UpholsteryBooking(models.Model):
     )
 
     # Booking details
-    booking_date = models.DateTimeField(_("Booking Date"), auto_now_add=True)
+    # booking_date = models.DateTimeField(_("Booking Date"), auto_now_add=True)
     status = models.CharField(
         _("Status"),
         max_length=20,
         choices=STATUS_CHOICES,
         default=STATUS_PENDING
     )
-    total_price = models.DecimalField(_("Total Price"), max_digits=10, decimal_places=3)
-    deposit_paid = models.DecimalField(_("Deposit Paid"), max_digits=10, decimal_places=3, default=0)
-    notes = models.TextField(_("Special Requirements"), blank=True)
+    # total_price = models.DecimalField(_("Total Price"), max_digits=10, decimal_places=3)
+    # deposit_paid = models.DecimalField(_("Deposit Paid"), max_digits=10, decimal_places=3, default=0)
+    # notes = models.TextField(_("Special Requirements"), blank=True)
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -198,37 +232,37 @@ class UpholsteryBooking(models.Model):
     class Meta:
         verbose_name = _("Upholstery Booking")
         verbose_name_plural = _("Upholstery Bookings")
-        ordering = ['-booking_date']
+        # ordering = ['-booking_date']
 
     def __str__(self):
         return f"Booking #{self.id}"
 
-    def save(self, *args, **kwargs):
-        # Update the time slot's current bookings
-        is_new = self.pk is None
-        if is_new and self.time_slot:
-            self.time_slot.current_bookings += 1
-            self.time_slot.save()
+    # def save(self, *args, **kwargs):
+    #     # Update the time slot's current bookings
+    #     is_new = self.pk is None
+    #     if is_new and self.time_slot:
+    #         self.time_slot.current_bookings += 1
+    #         self.time_slot.save()
+    #
+    #     super().save(*args, **kwargs)
 
-        super().save(*args, **kwargs)
-
-    def calculate_total_price(self):
-        """Calculate the total price based on the upholstery type, materials, and vehicle seats"""
-        base_price = self.upholstery_type.base_price
-        seats = self.seats  # Using the seats field from your Vehicle model
-
-        # Add the cost of the primary material for each seat
-        material_cost = self.primary_material.price_per_seat * seats
-
-        # If there's an accent material, add a portion of its cost
-        if self.accent_material:
-            accent_cost = self.accent_material.price_per_seat * seats * decimal.Decimal(
-                0.3)  # Assuming accent is 30% of the upholstery
-            total = base_price + material_cost + accent_cost
-        else:
-            total = base_price + material_cost
-
-        return total
+    # def calculate_total_price(self):
+    #     """Calculate the total price based on the upholstery type, materials, and vehicle seats"""
+    #     base_price = self.upholstery_type.base_price
+    #     seats = self.seats  # Using the seats field from your Vehicle model
+    #
+    #     # Add the cost of the primary material for each seat
+    #     material_cost = self.primary_material.price_per_seat * seats
+    #
+    #     # If there's an accent material, add a portion of its cost
+    #     if self.accent_material:
+    #         accent_cost = self.accent_material.price_per_seat * seats * decimal.Decimal(
+    #             0.3)  # Assuming accent is 30% of the upholstery
+    #         total = base_price + material_cost + accent_cost
+    #     else:
+    #         total = base_price + material_cost
+    #
+    #     return total
 
 
 class BookingImage(models.Model):

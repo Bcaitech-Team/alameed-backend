@@ -12,10 +12,11 @@ from .serializers import (
     UpholsteryGalleryImageSerializer,
     ServiceLocationSerializer,
     ServiceTimeSlotSerializer,
-    UpholsteryBookingListSerializer,
-    UpholsteryBookingDetailSerializer,
-    UpholsteryBookingCreateSerializer,
-    BookingImageSerializer
+    # UpholsteryBookingListSerializer,
+    # UpholsteryBookingDetailSerializer,
+    # UpholsteryBookingCreateSerializer,
+    BookingImageSerializer, UpholsteryBookingSerializer, UpholsteryCarModelsSerializer,
+    UpholsteryMaterialTypesSerializer
 )
 from ..models import (
     UpholsteryMaterial,
@@ -24,7 +25,7 @@ from ..models import (
     ServiceLocation,
     ServiceTimeSlot,
     UpholsteryBooking,
-    BookingImage
+    BookingImage, UpholsteryCarModels, UpholsteryMaterialTypes
 )
 
 
@@ -217,14 +218,15 @@ class UpholsteryBookingViewSet(viewsets.ModelViewSet):
     filterset_fields = ['status', ]
     search_fields = ['user__first_name']
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UpholsteryBookingSerializer
 
-    def get_serializer_class(self):
-        """Use different serializers based on action"""
-        if self.action == 'create':
-            return UpholsteryBookingCreateSerializer
-        elif self.action in ['retrieve', 'update', 'partial_update']:
-            return UpholsteryBookingDetailSerializer
-        return UpholsteryBookingListSerializer
+    # def get_serializer_class(self):
+    #     """Use different serializers based on action"""
+    #     if self.action == 'create':
+    #         return UpholsteryBookingCreateSerializer
+    #     elif self.action in ['retrieve', 'update', 'partial_update']:
+    #         return UpholsteryBookingDetailSerializer
+    #     return UpholsteryBookingListSerializer
 
     def get_queryset(self):
         """Filter bookings based on user permissions"""
@@ -238,150 +240,150 @@ class UpholsteryBookingViewSet(viewsets.ModelViewSet):
         # Regular users can only see their own bookings
         return queryset.filter(customer_phone=user.phone)
 
-    def update(self, request, *args, **kwargs):
-        """Restrict certain updates to admin only"""
-        booking = self.get_object()
+    # def update(self, request, *args, **kwargs):
+    #     """Restrict certain updates to admin only"""
+    #     booking = self.get_object()
+    #
+    #     # Get the fields being updated
+    #     updating_status = 'status' in request.data
+    #
+    #     # Only admin can update status
+    #     if updating_status and not request.user.is_staff:
+    #         return Response(
+    #             {"detail": "Only staff can update booking status."},
+    #             status=status.HTTP_403_FORBIDDEN
+    #         )
+    #
+    #     # Regular users can only update their own bookings
+    #     if not request.user.is_staff and booking.customer_phone != request.user.phone:
+    #         return Response(
+    #             {"detail": "You can only update your own bookings."},
+    #             status=status.HTTP_403_FORBIDDEN
+    #         )
+    #
+    #     # Prevent regular users from updating completed or in-progress bookings
+    #     if not request.user.is_staff and booking.status in [
+    #         UpholsteryBooking.STATUS_IN_PROGRESS,
+    #         UpholsteryBooking.STATUS_COMPLETED
+    #     ]:
+    #         return Response(
+    #             {"detail": "Cannot update bookings that are in progress or completed."},
+    #             status=status.HTTP_400_BAD_REQUEST
+    #         )
+    #
+    #     return super().update(request, *args, **kwargs)
 
-        # Get the fields being updated
-        updating_status = 'status' in request.data
-
-        # Only admin can update status
-        if updating_status and not request.user.is_staff:
-            return Response(
-                {"detail": "Only staff can update booking status."},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        # Regular users can only update their own bookings
-        if not request.user.is_staff and booking.customer_phone != request.user.phone:
-            return Response(
-                {"detail": "You can only update your own bookings."},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        # Prevent regular users from updating completed or in-progress bookings
-        if not request.user.is_staff and booking.status in [
-            UpholsteryBooking.STATUS_IN_PROGRESS,
-            UpholsteryBooking.STATUS_COMPLETED
-        ]:
-            return Response(
-                {"detail": "Cannot update bookings that are in progress or completed."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        return super().update(request, *args, **kwargs)
-
-    @action(detail=True, methods=['post'])
-    def cancel(self, request, pk=None):
-        """Cancel a booking"""
-        booking = self.get_object()
-
-        # Only allow cancellation of pending or confirmed bookings
-        if booking.status not in [UpholsteryBooking.STATUS_PENDING, UpholsteryBooking.STATUS_CONFIRMED]:
-            return Response(
-                {"detail": "Cannot cancel a booking that is already in progress or completed."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        booking.status = UpholsteryBooking.STATUS_CANCELLED
-        booking.save()
-
-        return Response({"status": "booking cancelled"})
-
-    @action(detail=True, methods=['post'])
-    def update_status(self, request, pk=None):
-        """Update booking status (staff only)"""
-        if not request.user.is_staff:
-            return Response(
-                {"detail": "You do not have permission to perform this action."},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        booking = self.get_object()
-        new_status = request.data.get('status')
-
-        if not new_status or new_status not in dict(UpholsteryBooking.STATUS_CHOICES):
-            return Response(
-                {"detail": "Invalid status value."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        booking.status = new_status
-
-        # If status is completed, set completion time
-        if new_status == UpholsteryBooking.STATUS_COMPLETED and not booking.completed_at:
-            booking.completed_at = timezone.now()
-
-        booking.save()
-        serializer = UpholsteryBookingDetailSerializer(booking)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=['get'])
-    def price_estimate(self, request):
-        """Calculate price estimate based on query parameters"""
-        # Get parameters
-        upholstery_type_id = request.query_params.get('upholstery_type')
-        primary_material_id = request.query_params.get('primary_material')
-        accent_material_id = request.query_params.get('accent_material')
-        seats = request.query_params.get('seats')
-
-        # Validate parameters
-        errors = {}
-        if not upholstery_type_id:
-            errors['upholstery_type'] = ['This parameter is required']
-        if not primary_material_id:
-            errors['primary_material'] = ['This parameter is required']
-        if not seats:
-            errors['seats'] = ['This parameter is required']
-
-        if errors:
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            seats = int(seats)
-            if seats <= 0:
-                return Response({'seats': ['Number of seats must be at least 1']}, status=status.HTTP_400_BAD_REQUEST)
-        except ValueError:
-            return Response({'seats': ['Must be a valid integer']}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Get objects
-        try:
-            upholstery_type = UpholsteryType.objects.get(id=upholstery_type_id)
-            primary_material = UpholsteryMaterial.objects.get(id=primary_material_id)
-            accent_material = None
-            if accent_material_id:
-                accent_material = UpholsteryMaterial.objects.get(id=accent_material_id)
-        except (UpholsteryType.DoesNotExist, UpholsteryMaterial.DoesNotExist):
-            return Response({'detail': 'One or more objects not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        # Calculate price
-        base_price = upholstery_type.base_price
-        material_cost = primary_material.price_per_seat * seats
-
-        total_price = base_price + material_cost
-
-        if accent_material:
-            if accent_material == primary_material:
-                return Response(
-                    {'accent_material': ['Primary and accent materials must be different']},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            accent_cost = accent_material.price_per_seat * seats * 0.3  # 30% for accent
-            total_price += accent_cost
-
-        # Return price estimate
-        return Response({
-            'upholstery_type': upholstery_type.name,
-            'primary_material': primary_material.name,
-            'accent_material': accent_material.name if accent_material else None,
-            'seats': seats,
-            'base_price': float(base_price),
-            'material_cost': float(material_cost),
-            'accent_cost': float(accent_material.price_per_seat * seats * 0.3) if accent_material else 0,
-            'total_price': float(total_price),
-            'estimated_deposit': float(total_price * 0.2),  # 20% deposit
-            'estimated_hours': upholstery_type.estimated_hours
-        })
+    # @action(detail=True, methods=['post'])
+    # def cancel(self, request, pk=None):
+    #     """Cancel a booking"""
+    #     booking = self.get_object()
+    #
+    #     # Only allow cancellation of pending or confirmed bookings
+    #     if booking.status not in [UpholsteryBooking.STATUS_PENDING, UpholsteryBooking.STATUS_CONFIRMED]:
+    #         return Response(
+    #             {"detail": "Cannot cancel a booking that is already in progress or completed."},
+    #             status=status.HTTP_400_BAD_REQUEST
+    #         )
+    #
+    #     booking.status = UpholsteryBooking.STATUS_CANCELLED
+    #     booking.save()
+    #
+    #     return Response({"status": "booking cancelled"})
+    #
+    # @action(detail=True, methods=['post'])
+    # def update_status(self, request, pk=None):
+    #     """Update booking status (staff only)"""
+    #     if not request.user.is_staff:
+    #         return Response(
+    #             {"detail": "You do not have permission to perform this action."},
+    #             status=status.HTTP_403_FORBIDDEN
+    #         )
+    #
+    #     booking = self.get_object()
+    #     new_status = request.data.get('status')
+    #
+    #     if not new_status or new_status not in dict(UpholsteryBooking.STATUS_CHOICES):
+    #         return Response(
+    #             {"detail": "Invalid status value."},
+    #             status=status.HTTP_400_BAD_REQUEST
+    #         )
+    #
+    #     booking.status = new_status
+    #
+    #     # If status is completed, set completion time
+    #     if new_status == UpholsteryBooking.STATUS_COMPLETED and not booking.completed_at:
+    #         booking.completed_at = timezone.now()
+    #
+    #     booking.save()
+    #     serializer = UpholsteryBookingDetailSerializer(booking)
+    #     return Response(serializer.data)
+    #
+    # @action(detail=False, methods=['get'])
+    # def price_estimate(self, request):
+    #     """Calculate price estimate based on query parameters"""
+    #     # Get parameters
+    #     upholstery_type_id = request.query_params.get('upholstery_type')
+    #     primary_material_id = request.query_params.get('primary_material')
+    #     accent_material_id = request.query_params.get('accent_material')
+    #     seats = request.query_params.get('seats')
+    #
+    #     # Validate parameters
+    #     errors = {}
+    #     if not upholstery_type_id:
+    #         errors['upholstery_type'] = ['This parameter is required']
+    #     if not primary_material_id:
+    #         errors['primary_material'] = ['This parameter is required']
+    #     if not seats:
+    #         errors['seats'] = ['This parameter is required']
+    #
+    #     if errors:
+    #         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     try:
+    #         seats = int(seats)
+    #         if seats <= 0:
+    #             return Response({'seats': ['Number of seats must be at least 1']}, status=status.HTTP_400_BAD_REQUEST)
+    #     except ValueError:
+    #         return Response({'seats': ['Must be a valid integer']}, status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     # Get objects
+    #     try:
+    #         upholstery_type = UpholsteryType.objects.get(id=upholstery_type_id)
+    #         primary_material = UpholsteryMaterial.objects.get(id=primary_material_id)
+    #         accent_material = None
+    #         if accent_material_id:
+    #             accent_material = UpholsteryMaterial.objects.get(id=accent_material_id)
+    #     except (UpholsteryType.DoesNotExist, UpholsteryMaterial.DoesNotExist):
+    #         return Response({'detail': 'One or more objects not found'}, status=status.HTTP_404_NOT_FOUND)
+    #
+    #     # Calculate price
+    #     base_price = upholstery_type.base_price
+    #     material_cost = primary_material.price_per_seat * seats
+    #
+    #     total_price = base_price + material_cost
+    #
+    #     if accent_material:
+    #         if accent_material == primary_material:
+    #             return Response(
+    #                 {'accent_material': ['Primary and accent materials must be different']},
+    #                 status=status.HTTP_400_BAD_REQUEST
+    #             )
+    #         accent_cost = accent_material.price_per_seat * seats * 0.3  # 30% for accent
+    #         total_price += accent_cost
+    #
+    #     # Return price estimate
+    #     return Response({
+    #         'upholstery_type': upholstery_type.name,
+    #         'primary_material': primary_material.name,
+    #         'accent_material': accent_material.name if accent_material else None,
+    #         'seats': seats,
+    #         'base_price': float(base_price),
+    #         'material_cost': float(material_cost),
+    #         'accent_cost': float(accent_material.price_per_seat * seats * 0.3) if accent_material else 0,
+    #         'total_price': float(total_price),
+    #         'estimated_deposit': float(total_price * 0.2),  # 20% deposit
+    #         'estimated_hours': upholstery_type.estimated_hours
+    #     })
 
 
 class BookingImageViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
@@ -403,3 +405,13 @@ class BookingImageViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
 
         # Regular users can only see images for their own bookings
         return queryset.filter(booking__customer_phone=user.phone)
+
+
+class UpholsteryCarModelsViewSet(viewsets.ModelViewSet):
+    queryset = UpholsteryCarModels.objects.all()
+    serializer_class = UpholsteryCarModelsSerializer
+
+
+class UpholsteryMaterialTypesViewSet(viewsets.ModelViewSet):
+    queryset = UpholsteryMaterialTypes.objects.all()
+    serializer_class = UpholsteryMaterialTypesSerializer
