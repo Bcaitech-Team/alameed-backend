@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -7,23 +6,24 @@ from django.utils.translation import gettext_lazy as _
 class UpholsteryMaterial(models.Model):
     """Materials available for car upholstery"""
     name = models.CharField(_("Material Name"), max_length=100)
-    description = models.TextField(_("Description"), blank=True)
+    # description = models.TextField(_("Description"), blank=True)
     image = models.ImageField(_("Material Image"), upload_to='upholstery/materials/', blank=True, null=True)
-    price_per_seat = models.DecimalField(_("Price per Seat"), max_digits=8, decimal_places=3)
-    available = models.BooleanField(_("Available"), default=True)
+
+    # price_per_seat = models.DecimalField(_("Price per Seat"), max_digits=8, decimal_places=3)
+    # available = models.BooleanField(_("Available"), default=True)
 
     # Additional properties
-    durability_rating = models.PositiveSmallIntegerField(
-        _("Durability Rating"),
-        validators=[MinValueValidator(1)],
-        choices=[(i, str(i)) for i in range(1, 6)],  # 1-5 rating
-        help_text=_("Rating from 1 (least durable) to 5 (most durable)")
-    )
+    # durability_rating = models.PositiveSmallIntegerField(
+    #     _("Durability Rating"),
+    #     validators=[MinValueValidator(1)],
+    #     choices=[(i, str(i)) for i in range(1, 6)],  # 1-5 rating
+    #     help_text=_("Rating from 1 (least durable) to 5 (most durable)")
+    # )
 
     class Meta:
         verbose_name = _("Upholstery Material")
         verbose_name_plural = _("Upholstery Materials")
-        ordering = ['name']
+        # ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -177,12 +177,14 @@ class UpholsteryBooking(models.Model):
     primary_material = models.ForeignKey(
         UpholsteryMaterial,
         on_delete=models.PROTECT,
-        related_name="primary_bookings"
+        related_name="primary_bookings",
+
     )
     material_type = models.ForeignKey(
         UpholsteryMaterialTypes,
         on_delete=models.PROTECT,
-        related_name="material_bookings"
+        related_name="material_bookings",
+
     )
     car_model = models.ForeignKey(
         UpholsteryCarModels,

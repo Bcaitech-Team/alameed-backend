@@ -63,7 +63,7 @@ class CustomerDataAdmin(admin.ModelAdmin):
 class RentalAdmin(admin.ModelAdmin):
     list_display = (
         'rental_info', 'customer_name', 'vehicle_name', 'start_date', 'end_date', 'status', 'total_price', 'created_at')
-    list_filter = ('status', 'start_date', 'end_date', 'created_at', 'vehicle__make', 'vehicle__model')
+    list_filter = ('status', 'start_date', 'end_date', 'created_at', 'vehicle__model')
     search_fields = (
         'customer_data__first_name',
         'customer_data__last_name',

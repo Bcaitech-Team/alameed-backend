@@ -34,8 +34,8 @@ class UpholsteryMaterialViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     queryset = UpholsteryMaterial.objects.all()
     serializer_class = UpholsteryMaterialSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['durability_rating', 'available']
-    search_fields = ['name', 'description']
+    # filterset_fields = ['durability_rating', 'available']
+    # search_fields = ['name', 'description']
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):

@@ -12,18 +12,13 @@ from .models import (
 
 @admin.register(UpholsteryMaterial)
 class UpholsteryMaterialAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price_per_seat', 'durability_rating', 'available', 'image_preview')
-    list_filter = ('available', 'durability_rating')
-    search_fields = ('name', 'description')
-    list_editable = ('available', 'price_per_seat')
+    list_display = ('name', 'image_preview')
+    search_fields = ('name',)
     readonly_fields = ('image_preview_large',)
 
     fieldsets = (
         ('Material Information', {
-            'fields': ('name', 'description', 'durability_rating')
-        }),
-        ('Pricing & Availability', {
-            'fields': ('price_per_seat', 'available')
+            'fields': ('name',)
         }),
         ('Image', {
             'fields': ('image', 'image_preview_large')
