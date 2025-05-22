@@ -16,10 +16,7 @@ class UpholsteryMaterialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UpholsteryMaterial
-        fields = [
-            'id', 'name', 'description', 'image', 'price_per_seat',
-            'available', 'durability_rating'
-        ]
+        fields = "__all__"
 
 
 class UpholsteryTypeSerializer(serializers.ModelSerializer):
