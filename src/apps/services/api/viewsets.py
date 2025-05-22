@@ -38,13 +38,6 @@ class UpholsteryMaterialViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     # search_fields = ['name', 'description']
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        """Filter to show only available materials for non-admin users"""
-        queryset = super().get_queryset()
-        if not self.request.user.is_staff:
-            queryset = queryset.filter(available=True)
-        return queryset
-
 
 class UpholsteryTypeViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     """ViewSet for upholstery service types (admin only for create/update/delete)"""
@@ -55,12 +48,6 @@ class UpholsteryTypeViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     search_fields = ['name', 'description']
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        """Filter to show only available types for non-admin users"""
-        queryset = super().get_queryset()
-        if not self.request.user.is_staff:
-            queryset = queryset.filter(available=True)
-        return queryset
 
 
 class UpholsteryGalleryImageViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
