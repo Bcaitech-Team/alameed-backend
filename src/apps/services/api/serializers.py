@@ -208,9 +208,11 @@ class BookingImageSerializer(serializers.ModelSerializer):
 #             self.instance.save()
 
 class UpholsteryBookingSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = UpholsteryBooking
         fields = '__all__'
+        read_only_fields = ["status"]
 
     def to_representation(self, instance):
         try:
