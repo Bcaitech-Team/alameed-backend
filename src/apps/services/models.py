@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -286,3 +288,133 @@ class BookingImage(models.Model):
     def __str__(self):
         status = "Before" if self.is_before else "After"
         return f"{status} image for Booking #{self.booking.id}"
+
+
+class CarListing(models.Model):
+    FUEL_CHOICES = [
+        ('gasoline', 'بنزين'),
+        ('diesel', 'ديزل'),
+        ('electric', 'كهربائي'),
+        ('hybrid', 'هايبرد'),
+    ]
+
+    TRANSMISSION_CHOICES = [
+        ('automatic', 'أوتوماتيك'),
+        ('manual', 'يدوي'),
+    ]
+
+    CONDITION_CHOICES = [
+        ('excellent', 'ممتازة'),
+        ('good', 'جيدة'),
+        ('needs_maintenance', 'تحتاج صيانة'),
+    ]
+
+    OWNER_COUNT_CHOICES = [
+        (1, 'مالك واحد'),
+        (2, 'مالكين'),
+        (3, 'ثلاثة ملاك'),
+        (4, 'أربعة ملاك أو أكثر'),
+    ]
+
+    STATUS_CHOICES = [
+        ('draft', 'مسودة'),
+        ('active', 'نشط'),
+        ('sold', 'مباع'),
+        ('inactive', 'غير نشط'),
+    ]
+
+    # Basic Car Info
+    brand_model = models.CharField(max_length=200, verbose_name='الماركة والطراز')
+    year = models.IntegerField(
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='سنة الصنع'
+    )
+    mileage = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        verbose_name='عدد الكيلومترات'
+    )
+    fuel_type = models.CharField(
+        max_length=20,
+        choices=FUEL_CHOICES,
+        verbose_name='نوع الوقود'
+    )
+    transmission = models.CharField(
+        max_length=20,
+        choices=TRANSMISSION_CHOICES,
+        verbose_name='ناقل الحركة'
+    )
+    color = models.CharField(max_length=100, verbose_name='لون السيارة')
+
+    # Car History
+    previous_accidents = models.BooleanField(verbose_name='حوادث سابقة')
+    previous_owners_count = models.IntegerField(
+        choices=OWNER_COUNT_CHOICES,
+        verbose_name='عدد الملاك السابقين'
+    )
+    body_condition = models.CharField(
+        max_length=20,
+        choices=CONDITION_CHOICES,
+        verbose_name='حالة الهيكل'
+    )
+
+    # Additional Details
+    accessories = models.TextField(
+        blank=True,
+        null=True,
+        help_text='قائمة الملحقات مفصولة بفواصل',
+        verbose_name='الملحقات'
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        verbose_name='السعر المطلوب'
+    )
+
+    # Contact Information
+    seller_name = models.CharField(max_length=200, verbose_name='اسم البائع')
+    seller_phone = models.CharField(max_length=20, verbose_name='رقم الهاتف')
+    seller_email = models.EmailField(blank=True, null=True, verbose_name='البريد الإلكتروني')
+
+    # System Fields
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='draft',
+        verbose_name='حالة الإعلان'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.brand_model} - {self.year}"
+
+    @property
+    def accessories_list(self):
+        """Return accessories as a list"""
+        if self.accessories:
+            return [acc.strip() for acc in self.accessories.split(',') if acc.strip()]
+        return []
+
+
+class CarImage(models.Model):
+    car_listing = models.ForeignKey(
+        CarListing,
+        related_name='images',
+        on_delete=models.CASCADE
+    )
+    image = models.ImageField(
+        upload_to='car_images/%Y/%m/%d/',
+        verbose_name='صورة السيارة'
+    )
+
+    class Meta:
+        verbose_name = "Car Image"
+        verbose_name_plural = "Car Images"
+
+    def __str__(self):
+        return f"صورة {self.car_listing.brand_model}"

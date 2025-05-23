@@ -7,7 +7,7 @@ from ..models import (
     ServiceLocation,
     ServiceTimeSlot,
     UpholsteryBooking,
-    BookingImage, UpholsteryCarModels, UpholsteryMaterialTypes,
+    BookingImage, UpholsteryCarModels, UpholsteryMaterialTypes, CarImage, CarListing,
 )
 
 
@@ -233,3 +233,65 @@ class UpholsteryMaterialTypesSerializer(serializers.ModelSerializer):
     class Meta:
         model = UpholsteryMaterialTypes
         fields = ['id', 'name', 'image']
+
+
+class CarImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarImage
+        fields = ['image', ]
+
+
+class CarListingSerializer(serializers.ModelSerializer):
+    images = CarImageSerializer(many=True, read_only=True)
+    uploaded_images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False
+    )
+    accessories_list = serializers.ReadOnlyField()
+
+    class Meta:
+        model = CarListing
+        fields = [
+            'id', 'brand_model', 'year', 'mileage', 'fuel_type', 'transmission',
+            'color', 'previous_accidents', 'previous_owners_count', 'body_condition',
+            'accessories', 'accessories_list', 'price', 'seller_name', 'seller_phone',
+            'seller_email', 'status', 'created_at', 'updated_at', 'images', 'uploaded_images'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'accessories_list']
+
+    def create(self, validated_data):
+        uploaded_images = validated_data.pop('uploaded_images', [])
+
+        # Set user from request
+        if self.context['request'].user.is_authenticated:
+            validated_data['user'] = self.context['request'].user
+
+        car_listing = CarListing.objects.create(**validated_data)
+
+        # Handle images
+        for i, image in enumerate(uploaded_images):
+            CarImage.objects.create(
+                car_listing=car_listing,
+                image=image,
+            )
+
+        return car_listing
+
+    def update(self, instance, validated_data):
+        uploaded_images = validated_data.pop('uploaded_images', [])
+
+        # Update basic fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Handle new images
+        if uploaded_images:
+            for image in uploaded_images:
+                CarImage.objects.create(
+                    car_listing=instance,
+                    image=image,
+                )
+
+        return instance

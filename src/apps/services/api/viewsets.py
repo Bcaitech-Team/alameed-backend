@@ -3,6 +3,7 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from core.mixins import AdminOnlyMixin
@@ -16,7 +17,7 @@ from .serializers import (
     # UpholsteryBookingDetailSerializer,
     # UpholsteryBookingCreateSerializer,
     BookingImageSerializer, UpholsteryBookingSerializer, UpholsteryCarModelsSerializer,
-    UpholsteryMaterialTypesSerializer
+    UpholsteryMaterialTypesSerializer, CarImageSerializer, CarListingSerializer
 )
 from ..models import (
     UpholsteryMaterial,
@@ -25,7 +26,7 @@ from ..models import (
     ServiceLocation,
     ServiceTimeSlot,
     UpholsteryBooking,
-    BookingImage, UpholsteryCarModels, UpholsteryMaterialTypes
+    BookingImage, UpholsteryCarModels, UpholsteryMaterialTypes, CarImage, CarListing
 )
 
 
@@ -397,8 +398,125 @@ class BookingImageViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
 class UpholsteryCarModelsViewSet(viewsets.ModelViewSet):
     queryset = UpholsteryCarModels.objects.all()
     serializer_class = UpholsteryCarModelsSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class UpholsteryMaterialTypesViewSet(viewsets.ModelViewSet):
     queryset = UpholsteryMaterialTypes.objects.all()
     serializer_class = UpholsteryMaterialTypesSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class CarListingViewSet(viewsets.ModelViewSet):
+    queryset = CarListing.objects.all()
+    serializer_class = CarListingSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['fuel_type', 'transmission', 'year', 'status', 'body_condition', 'previous_owners_count']
+    search_fields = ['brand_model', 'color', 'seller_name', 'accessories']
+    ordering_fields = ['created_at', 'price', 'year', 'mileage']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        queryset = CarListing.objects.all()
+        return queryset
+
+    def perform_create(self, serializer):
+        """Set the user when creating a car listing"""
+        if self.request.user.is_authenticated:
+            serializer.save(user=self.request.user)
+        else:
+            serializer.save()
+
+    def perform_update(self, serializer):
+        """Ensure user can only update their own listings"""
+        instance = self.get_object()
+        if (self.request.user == instance.user or
+                self.request.user.is_staff or
+                instance.user is None):
+            serializer.save()
+        else:
+            raise PermissionError("You can only update your own listings")
+
+    @action(detail=False, methods=['get'])
+    def my_listings(self, request):
+        """Get current user's car listings"""
+        if not request.user.is_authenticated:
+            return Response({'detail': 'Authentication required'},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        queryset = self.get_queryset().filter(user=request.user)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def mark_as_sold(self, request, pk=None):
+        """Mark a car listing as sold"""
+        car_listing = self.get_object()
+
+        if (request.user != car_listing.user and
+                not request.user.is_staff and
+                car_listing.user is not None):
+            return Response({'detail': 'Permission denied'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        car_listing.status = 'sold'
+        car_listing.save()
+
+        return Response({'status': 'Car marked as sold'})
+
+    @action(detail=True, methods=['post'])
+    def activate(self, request, pk=None):
+        """Activate a car listing"""
+        car_listing = self.get_object()
+
+        if (request.user != car_listing.user and
+                not request.user.is_staff and
+                car_listing.user is not None):
+            return Response({'detail': 'Permission denied'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        car_listing.status = 'active'
+        car_listing.save()
+
+        return Response({'status': 'Car listing activated'})
+
+
+class CarImageViewSet(viewsets.ModelViewSet):
+    queryset = CarImage.objects.all()
+    serializer_class = CarImageSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        """Ensure user can only add images to their own listings"""
+        car_listing = serializer.validated_data['car_listing']
+        if (self.request.user == car_listing.user or
+                self.request.user.is_staff or
+                car_listing.user is None):
+            serializer.save()
+        else:
+            raise PermissionError("You can only add images to your own listings")
+
+    def perform_update(self, serializer):
+        """Ensure user can only update images of their own listings"""
+        instance = self.get_object()
+        if (self.request.user == instance.car_listing.user or
+                self.request.user.is_staff or
+                instance.car_listing.user is None):
+            serializer.save()
+        else:
+            raise PermissionError("You can only update images of your own listings")
+
+    def perform_destroy(self, instance):
+        """Ensure user can only delete images of their own listings"""
+        if (self.request.user == instance.car_listing.user or
+                self.request.user.is_staff or
+                instance.car_listing.user is None):
+            instance.delete()
+        else:
+            raise PermissionError("You can only delete images of your own listings")
