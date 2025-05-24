@@ -68,7 +68,6 @@ class Vehicle(models.Model):
         ('used', 'Used'),
         ('certified', 'Certified Pre-owned')
     ])
-    condition_ar = models.CharField(_("Arabic Condition"), max_length=20)
 
     # Insurance and Registration
     insurance_expiry = models.DateField(_("Insurance Expiry"), blank=True, null=True)
@@ -85,7 +84,9 @@ class Vehicle(models.Model):
     is_featured = models.BooleanField(_("Featured"), default=False)
     is_active = models.BooleanField(_("Active"), default=True)
     is_negotiable = models.BooleanField(_("Negotiable"), default=False)
-    for_rent = models.BooleanField(_("For Rent"), default=False)
+    contract_type = models.CharField(_("Contract Type"), max_length=20,
+                                     choices=(("sell", "Sell"), ("rent", "Rent"), ("rent_to_own", "Rent to Own")),
+                                     default="rent")
 
     class Meta:
         ordering = ['-created_at']

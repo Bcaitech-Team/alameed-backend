@@ -69,7 +69,7 @@ class VehicleViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = [
         'brand', 'year', 'body_type', 'engine_type',
-        'transmission', 'condition', 'is_featured', 'for_rent',
+        'transmission', 'condition', 'is_featured', 'contract_type',
     ]
     search_fields = ['model', 'color', 'brand__name']
     ordering_fields = ['price', 'year', 'created_at']

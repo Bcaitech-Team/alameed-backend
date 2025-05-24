@@ -103,7 +103,7 @@ class VehicleAdmin(admin.ModelAdmin):
     )
     list_filter = (
         'brand', 'year', 'condition', 'engine_type', 'transmission',
-        'is_featured', 'is_active', 'for_rent', 'created_at'
+        'is_featured', 'is_active', 'contract_type', 'created_at'
     )
     search_fields = ('model', 'brand__name', 'color', 'body_type')
     readonly_fields = (
@@ -120,7 +120,7 @@ class VehicleAdmin(admin.ModelAdmin):
             'fields': ('brand', 'model', 'year', 'price', 'currency')
         }),
         ('Vehicle Details', {
-            'fields': ('body_type', 'color', 'mileage', 'condition', 'condition_ar')
+            'fields': ('body_type', 'color', 'mileage', 'condition')
         }),
         ('Technical Specifications', {
             'fields': (
@@ -134,7 +134,7 @@ class VehicleAdmin(admin.ModelAdmin):
         }),
         ('Status & Settings', {
             'fields': (
-                'is_active', 'is_featured', 'is_negotiable', 'for_rent'
+                'is_active', 'is_featured', 'is_negotiable', 'contract_type'
             )
         }),
         ('Insurance & Registration', {
@@ -158,7 +158,7 @@ class VehicleAdmin(admin.ModelAdmin):
     # Custom actions
     actions = [
         'mark_as_featured', 'unmark_as_featured', 'mark_as_active',
-        'mark_as_inactive', 'mark_for_rent', 'unmark_for_rent'
+        'mark_as_inactive', 'mark_contract_type', 'unmark_contract_type'
     ]
 
     def vehicle_info(self, obj):
@@ -184,7 +184,7 @@ class VehicleAdmin(admin.ModelAdmin):
         if obj.is_featured:
             indicators.append(
                 '<span style="background: #ffc107; color: #000; padding: 2px 6px; border-radius: 3px; font-size: 11px;">FEATURED</span>')
-        if obj.for_rent:
+        if obj.contract_type:
             indicators.append(
                 '<span style="background: #17a2b8; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 11px;">RENT</span>')
         if obj.is_negotiable:
@@ -272,17 +272,17 @@ class VehicleAdmin(admin.ModelAdmin):
 
     mark_as_inactive.short_description = 'Mark selected vehicles as inactive'
 
-    def mark_for_rent(self, request, queryset):
-        updated = queryset.update(for_rent=True)
+    def mark_contract_type(self, request, queryset):
+        updated = queryset.update(contract_type=True)
         self.message_user(request, f'{updated} vehicle(s) marked for rent.')
 
-    mark_for_rent.short_description = 'Mark selected vehicles for rent'
+    mark_contract_type.short_description = 'Mark selected vehicles for rent'
 
-    def unmark_for_rent(self, request, queryset):
-        updated = queryset.update(for_rent=False)
+    def unmark_contract_type(self, request, queryset):
+        updated = queryset.update(contract_type=False)
         self.message_user(request, f'{updated} vehicle(s) unmarked for rent.')
 
-    unmark_for_rent.short_description = 'Unmark selected vehicles for rent'
+    unmark_contract_type.short_description = 'Unmark selected vehicles for rent'
 
     # Override get_queryset for better performance
     def get_queryset(self, request):
