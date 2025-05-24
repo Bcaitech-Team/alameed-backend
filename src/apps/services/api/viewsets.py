@@ -37,7 +37,7 @@ class UpholsteryMaterialViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     # filterset_fields = ['durability_rating', 'available']
     # search_fields = ['name', 'description']
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class UpholsteryTypeViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
@@ -398,7 +398,7 @@ class BookingImageViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
 class UpholsteryCarModelsViewSet(viewsets.ModelViewSet):
     queryset = UpholsteryCarModels.objects.all()
     serializer_class = UpholsteryCarModelsSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['upholstery_material']
 
@@ -406,7 +406,7 @@ class UpholsteryCarModelsViewSet(viewsets.ModelViewSet):
 class UpholsteryMaterialTypesViewSet(viewsets.ModelViewSet):
     queryset = UpholsteryMaterialTypes.objects.all()
     serializer_class = UpholsteryMaterialTypesSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['upholstery_material']
 
