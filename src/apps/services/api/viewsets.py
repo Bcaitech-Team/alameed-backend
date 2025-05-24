@@ -399,12 +399,16 @@ class UpholsteryCarModelsViewSet(viewsets.ModelViewSet):
     queryset = UpholsteryCarModels.objects.all()
     serializer_class = UpholsteryCarModelsSerializer
     permission_classes = [permissions.AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['upholstery_material']
 
 
 class UpholsteryMaterialTypesViewSet(viewsets.ModelViewSet):
     queryset = UpholsteryMaterialTypes.objects.all()
     serializer_class = UpholsteryMaterialTypesSerializer
     permission_classes = [permissions.AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['upholstery_material']
 
 
 class CarListingViewSet(viewsets.ModelViewSet):

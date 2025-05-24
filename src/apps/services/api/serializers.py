@@ -224,21 +224,22 @@ class UpholsteryBookingSerializer(serializers.ModelSerializer):
 
 
 class UpholsteryCarModelsSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = UpholsteryCarModels
-        fields = ['id', 'name']
+        fields = "__all__"
 
 
 class UpholsteryMaterialTypesSerializer(serializers.ModelSerializer):
     class Meta:
         model = UpholsteryMaterialTypes
-        fields = ['id', 'name', 'image']
+        fields = "__all__"
 
 
 class CarImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarImage
-        fields = ['image', ]
+        fields = "__all__"
 
 
 class CarListingSerializer(serializers.ModelSerializer):
