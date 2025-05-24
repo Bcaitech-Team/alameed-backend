@@ -10,6 +10,7 @@ class UpholsteryMaterial(models.Model):
     name = models.CharField(_("Material Name"), max_length=100)
     # description = models.TextField(_("Description"), blank=True)
     image = models.ImageField(_("Material Image"), upload_to='upholstery/materials/', blank=True, null=True)
+    price = models.DecimalField(_("Price"), max_digits=8, decimal_places=3, default=240)
 
     # price_per_seat = models.DecimalField(_("Price per Seat"), max_digits=8, decimal_places=3)
     # available = models.BooleanField(_("Available"), default=True)
@@ -124,6 +125,12 @@ class ServiceTimeSlot(models.Model):
 
 class UpholsteryCarModels(models.Model):
     name = models.CharField(_("Car Model Name"), max_length=100)
+    upholstery_material = models.ForeignKey(
+        UpholsteryMaterial,
+        on_delete=models.CASCADE,
+        related_name="car_models"
+    )
+
 
     class Meta:
         verbose_name = _("Upholstery Car Model")
@@ -137,7 +144,11 @@ class UpholsteryCarModels(models.Model):
 class UpholsteryMaterialTypes(models.Model):
     name = models.CharField(_("Material Type Name"), max_length=100)
     image = models.ImageField(_("Material Type Image"), upload_to='upholstery/material_types/', blank=True, null=True)
-
+    upholstery_material = models.ForeignKey(
+        UpholsteryMaterial,
+        on_delete=models.CASCADE,
+        related_name="material_types"
+    )
     class Meta:
         verbose_name = _("Upholstery Material Type")
         verbose_name_plural = _("Upholstery Material Types")
