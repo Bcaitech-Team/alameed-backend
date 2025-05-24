@@ -149,6 +149,8 @@ class UpholsteryMaterialTypes(models.Model):
         on_delete=models.CASCADE,
         related_name="material_types"
     )
+    upholstery_car_model = models.ForeignKey(UpholsteryCarModels, on_delete=models.CASCADE,
+                                             related_name="material_types")
     class Meta:
         verbose_name = _("Upholstery Material Type")
         verbose_name_plural = _("Upholstery Material Types")

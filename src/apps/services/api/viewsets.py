@@ -408,7 +408,7 @@ class UpholsteryMaterialTypesViewSet(viewsets.ModelViewSet):
     serializer_class = UpholsteryMaterialTypesSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['upholstery_material']
+    filterset_fields = ['upholstery_material', 'upholstery_car_model']
 
 
 class CarListingViewSet(viewsets.ModelViewSet):
