@@ -17,7 +17,7 @@ from .serializers import (
     # UpholsteryBookingDetailSerializer,
     # UpholsteryBookingCreateSerializer,
     BookingImageSerializer, UpholsteryBookingSerializer, UpholsteryCarModelsSerializer,
-    UpholsteryMaterialTypesSerializer, CarImageSerializer, CarListingSerializer
+    UpholsteryMaterialTypesSerializer, CarImageSerializer, CarListingSerializer, VehicleComparisonSerializer
 )
 from ..models import (
     UpholsteryMaterial,
@@ -26,7 +26,7 @@ from ..models import (
     ServiceLocation,
     ServiceTimeSlot,
     UpholsteryBooking,
-    BookingImage, UpholsteryCarModels, UpholsteryMaterialTypes, CarImage, CarListing
+    BookingImage, UpholsteryCarModels, UpholsteryMaterialTypes, CarImage, CarListing, VehicleComparison
 )
 
 
@@ -524,3 +524,16 @@ class CarImageViewSet(viewsets.ModelViewSet):
             instance.delete()
         else:
             raise PermissionError("You can only delete images of your own listings")
+
+
+class VehicleComparisonViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for comparing multiple vehicles.
+    Allows users to compare features of different vehicles side by side.
+    """
+    serializer_class = VehicleComparisonSerializer
+    model = VehicleComparison
+
+    def get_queryset(self):
+        """Return all vehicles for comparison"""
+        return VehicleComparison.objects.filter(user=self.request.user)

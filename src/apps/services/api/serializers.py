@@ -7,7 +7,7 @@ from ..models import (
     ServiceLocation,
     ServiceTimeSlot,
     UpholsteryBooking,
-    BookingImage, UpholsteryCarModels, UpholsteryMaterialTypes, CarImage, CarListing,
+    BookingImage, UpholsteryCarModels, UpholsteryMaterialTypes, CarImage, CarListing, VehicleComparison,
 )
 
 
@@ -296,3 +296,16 @@ class CarListingSerializer(serializers.ModelSerializer):
                 )
 
         return instance
+
+
+class VehicleComparisonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehicleComparison
+        fields = "__all__"
+
+    def save(self, **kwargs):
+        """Override save to set user"""
+        super().save(**kwargs)
+
+        self.instance.user = self.context['request'].user
+        self.instance.save()

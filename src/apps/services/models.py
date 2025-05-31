@@ -4,6 +4,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from src.apps.vehicles.models import Vehicle
+
 
 class UpholsteryMaterial(models.Model):
     """Materials available for car upholstery"""
@@ -131,7 +133,6 @@ class UpholsteryCarModels(models.Model):
         related_name="car_models"
     )
 
-
     class Meta:
         verbose_name = _("Upholstery Car Model")
         verbose_name_plural = _("Upholstery Car Models")
@@ -151,6 +152,7 @@ class UpholsteryMaterialTypes(models.Model):
     )
     upholstery_car_model = models.ForeignKey(UpholsteryCarModels, on_delete=models.CASCADE,
                                              related_name="material_types")
+
     class Meta:
         verbose_name = _("Upholstery Material Type")
         verbose_name_plural = _("Upholstery Material Types")
@@ -431,3 +433,15 @@ class CarImage(models.Model):
 
     def __str__(self):
         return f"صورة {self.car_listing.brand_model}"
+
+
+class VehicleComparison(models.Model):
+    """Model to compare vehicle listings"""
+    vehicles = models.ManyToManyField(
+        Vehicle, blank=True
+    )
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='comparisons')
+
+    class Meta:
+        verbose_name = _("Vehicle Comparison")
+        verbose_name_plural = _("Vehicle Comparisons")
