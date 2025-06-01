@@ -123,7 +123,7 @@ class InquiryData(models.Model):
 
 class FavoriteVehicle(models.Model):
     """Model to track user's favorite vehicles"""
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='favorite_vehicles')
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='favorite_vehicles', null=True)
     vehicles = models.ManyToManyField(Vehicle, related_name='favorited_by')
 
     def __str__(self):

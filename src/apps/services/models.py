@@ -440,7 +440,7 @@ class VehicleComparison(models.Model):
     vehicles = models.ManyToManyField(
         Vehicle, blank=True
     )
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='comparisons')
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='comparisons', null=True)
 
     class Meta:
         verbose_name = _("Vehicle Comparison")
