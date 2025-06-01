@@ -305,7 +305,6 @@ class VehicleComparisonSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
         """Override save to set user"""
+        kwargs['user'] = self.context['request'].user
         super().save(**kwargs)
 
-        self.instance.user = self.context['request'].user
-        self.instance.save()

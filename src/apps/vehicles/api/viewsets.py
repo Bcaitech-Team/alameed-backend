@@ -14,9 +14,9 @@ from .serializers import (
     VehicleDetailSerializer,
     VehicleCreateUpdateSerializer,
     VehicleImageSerializer,
-    InquiryDataSerializer
+    InquiryDataSerializer, FavoriteVehicleSerializer
 )
-from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData
+from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle
 
 
 class BrandViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
@@ -196,3 +196,56 @@ class InquiryDataViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['phone', 'whatsapp']
+
+
+class FavoriteVehicleViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for FavoriteVehicle model
+    """
+    serializer_class = FavoriteVehicleSerializer
+    permission_classes = [IsAuthenticated]
+    model = FavoriteVehicle
+
+    def get_queryset(self):
+        """
+        Get the favorite vehicles for the current user
+        """
+        user = self.request.user
+        return FavoriteVehicle.objects.filter(user=user)
+
+    def list(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def get_object(self):
+        """
+        Get the favorite vehicle for the current user
+        """
+        user = self.request.user
+
+        return FavoriteVehicle.objects.get_or_create(user=user)[0]
+
+    @action(detail=False, methods=['post'])
+    def add_to_favorites(self, request, *args, **kwargs):
+        """
+        Add a vehicle to the user's favorites
+        """
+        vehicle_id = request.data.get('vehicle_id')
+        favorite = FavoriteVehicle.objects.get_or_create(user=self.request.user)[0]
+        favorite.vehicles.add(vehicle_id)
+
+        return Response(
+            {"status": "success", "message": "Vehicle added to favorites"},
+        )
+
+    @action(detail=False, methods=['post'])
+    def remove_from_favorites(self, request, *args, **kwargs):
+        """
+        Add a vehicle to the user's favorites
+        """
+        vehicle_id = request.data.get('vehicle_id')
+        favorite = FavoriteVehicle.objects.get_or_create(user=self.request.user)[0]
+        favorite.vehicles.remove(vehicle_id)
+
+        return Response(
+            {"status": "success", "message": "Vehicle removed from favorites"},
+        )

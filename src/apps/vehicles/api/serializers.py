@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData
+from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -186,3 +186,16 @@ class VehicleCreateUpdateSerializer(serializers.ModelSerializer):
                 )
 
         return instance
+
+
+class FavoriteVehicleSerializer(serializers.ModelSerializer):
+    """Serializer for user's favorite vehicles"""
+
+    class Meta:
+        model = FavoriteVehicle
+        fields = "__all__"
+
+    def save(self, **kwargs):
+        """Override save to set user"""
+        kwargs['user'] = self.context['request'].user
+        super().save(**kwargs)
