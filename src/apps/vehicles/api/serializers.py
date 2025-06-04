@@ -199,3 +199,8 @@ class FavoriteVehicleSerializer(serializers.ModelSerializer):
         """Override save to set user"""
         kwargs['user'] = self.context['request'].user
         super().save(**kwargs)
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['vehicles'] = VehicleDetailSerializer(instance.vehicles, many=True).data
+        return representation
