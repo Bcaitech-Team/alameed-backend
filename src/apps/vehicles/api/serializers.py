@@ -202,5 +202,5 @@ class FavoriteVehicleSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['vehicles'] = VehicleDetailSerializer(instance.vehicles, many=True).data
+        representation['vehicles'] = VehicleListSerializer(instance.vehicles, many=True).data
         return representation
