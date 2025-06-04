@@ -9,6 +9,7 @@ from ..models import (
     UpholsteryBooking,
     BookingImage, UpholsteryCarModels, UpholsteryMaterialTypes, CarImage, CarListing, VehicleComparison,
 )
+from ...vehicles.api.serializers import VehicleDetailSerializer
 
 
 class UpholsteryMaterialSerializer(serializers.ModelSerializer):
@@ -299,6 +300,7 @@ class CarListingSerializer(serializers.ModelSerializer):
 
 
 class VehicleComparisonSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = VehicleComparison
         fields = "__all__"
@@ -308,3 +310,7 @@ class VehicleComparisonSerializer(serializers.ModelSerializer):
         kwargs['user'] = self.context['request'].user
         super().save(**kwargs)
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['vehicles'] = VehicleDetailSerializer(instance.vehicles, many=True).data
+        return representation

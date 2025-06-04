@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 from .models import (
     UpholsteryMaterial, UpholsteryType, UpholsteryGalleryImage,
     ServiceLocation, ServiceTimeSlot, UpholsteryCarModels,
-    UpholsteryMaterialTypes, UpholsteryBooking, BookingImage
+    UpholsteryMaterialTypes, UpholsteryBooking, BookingImage, VehicleComparison
 )
 
 
@@ -362,3 +362,4 @@ class BookingImageAdmin(admin.ModelAdmin):
 # Add inlines to relevant models
 UpholsteryTypeAdmin.inlines = [UpholsteryGalleryImageInline]
 ServiceLocationAdmin.inlines = [ServiceTimeSlotInline]
+admin.site.register(VehicleComparison)

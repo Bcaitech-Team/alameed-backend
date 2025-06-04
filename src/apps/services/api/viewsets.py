@@ -529,11 +529,57 @@ class CarImageViewSet(viewsets.ModelViewSet):
 class VehicleComparisonViewSet(viewsets.ModelViewSet):
     """
     ViewSet for comparing multiple vehicles.
-    Allows users to compare features of different vehicles side by side.
+    Each user has a single comparison object.
     """
     serializer_class = VehicleComparisonSerializer
     model = VehicleComparison
 
     def get_queryset(self):
-        """Return all vehicles for comparison"""
+        """
+        Get the comparison object for the current user
+        """
         return VehicleComparison.objects.filter(user=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        """
+        Override list to behave like retrieve
+        """
+        return self.retrieve(request, *args, **kwargs)
+
+    def get_object(self):
+        """
+        Get or create the user's comparison object
+        """
+        return VehicleComparison.objects.get_or_create(user=self.request.user)[0]
+
+    @action(detail=False, methods=['post'])
+    def add_vehicle(self, request):
+        """
+        Add a vehicle to the comparison list
+        """
+        vehicle_id = request.data.get('vehicle_id')
+        comparison = self.get_object()
+        comparison.vehicles.add(vehicle_id)
+
+        return Response({"status": "success", "message": "Vehicle added to comparison"})
+
+    @action(detail=False, methods=['post'])
+    def remove_vehicle(self, request):
+        """
+        Remove a vehicle from the comparison list
+        """
+        vehicle_id = request.data.get('vehicle_id')
+        comparison = self.get_object()
+        comparison.vehicles.remove(vehicle_id)
+
+        return Response({"status": "success", "message": "Vehicle removed from comparison"})
+
+    @action(detail=False, methods=['post'])
+    def reset(self, request):
+        """
+        Clear all vehicles from the comparison list
+        """
+        comparison = self.get_object()
+        comparison.vehicles.clear()
+
+        return Response({"status": "success", "message": "Comparison list reset"})
