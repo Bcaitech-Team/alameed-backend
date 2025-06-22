@@ -28,7 +28,7 @@ from src.apps.services.api.viewsets import UpholsteryMaterialViewSet, Upholstery
     VehicleComparisonViewSet
 from src.apps.support.api.viewsets import TicketViewSet, ChatMessageViewSet, ContactMessageViewSet
 from src.apps.vehicles.api.viewsets import BrandViewSet, FeatureViewSet, VehicleTypeViewSet, VehicleImageViewSet, \
-    VehicleViewSet, InquiryDataViewSet, FavoriteVehicleViewSet
+    VehicleViewSet, InquiryDataViewSet, FavoriteVehicleViewSet, StatisticsAPIView
 
 router = DefaultRouter()
 router.register('vehicles/brands', BrandViewSet)
@@ -61,6 +61,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/authentication/', include('dj_rest_auth.urls')),
     path('api/authentication/registration/', include('dj_rest_auth.registration.urls')),
+    path('api/vehicles/statistics/', StatisticsAPIView.as_view(), name='statistics'),
 
 ]
 if settings.DEBUG:

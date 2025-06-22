@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from core.mixins import AdminOnlyMixin
 from .serializers import (
@@ -17,6 +18,7 @@ from .serializers import (
     InquiryDataSerializer, FavoriteVehicleSerializer
 )
 from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle
+from ...reviews.models import VehicleReview
 
 
 class BrandViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
@@ -249,3 +251,21 @@ class FavoriteVehicleViewSet(viewsets.ModelViewSet):
         return Response(
             {"status": "success", "message": "Vehicle removed from favorites"},
         )
+
+
+class StatisticsAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        """
+        Get statistics about vehicles
+        """
+        total_vehicles = Vehicle.objects.count()
+        total_favorited_vehicles = FavoriteVehicle.vehicles.through.objects.count()
+        total_reviews = VehicleReview.objects.count()
+
+        stats = {
+            "total_vehicles": total_vehicles,
+            "total_favorited_vehicles": total_favorited_vehicles,
+            "total_reviews": total_reviews,
+        }
+
+        return Response(stats)
