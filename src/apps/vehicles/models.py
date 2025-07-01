@@ -8,6 +8,7 @@ class Brand(models.Model):
     name = models.CharField(_("Brand Name"), max_length=100)
     logo = models.ImageField(_("Brand Logo"), upload_to='brands/', blank=True, null=True)
     description = models.TextField(_("Description"), blank=True)
+    primary = models.BooleanField(_("Primary Brand"), default=True)
 
     def __str__(self):
         return self.name
