@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import asyncio
 import datetime
+import os
 from pathlib import Path
 from uuid import uuid4
 
@@ -18,16 +19,15 @@ import django
 import tldextract
 from django.utils.encoding import force_str, smart_str
 from django.utils.translation import gettext, gettext_lazy
+from firebase_admin import initialize_app
 
 django.utils.encoding.smart_text = smart_str
 django.utils.encoding.force_text = force_str
 django.utils.translation.ugettext = gettext
 django.utils.translation.ugettext_lazy = gettext_lazy
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -39,7 +39,6 @@ SECRET_KEY = 'django-insecure-r14_0+r^tq2t_9&n!jqpknrj!855ceo0++$cg==ka2il%*#r@u
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-
 
 # Application definition
 
@@ -64,6 +63,9 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'corsheaders',
+    "fcm_django",
+
+    # Local apps
     'src.apps.vehicles',
     'src.apps.reviews',
     'src.apps.services',
@@ -82,7 +84,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # "allauth.account.middleware.AccountMiddleware",
-
 
 ]
 
@@ -118,7 +119,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -136,7 +136,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -260,5 +259,18 @@ CSRF_TRUSTED_ORIGINS = [
 
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
-
 # AUTH_USER_MODEL = 'users.CustomUser'
+
+
+# ==============================================================================
+# FIREBASE SETTINGS
+# ==============================================================================
+
+initialize_app()
+
+# ==============================================================================
+#  GOOGLE SETTINGS
+# ==============================================================================
+
+GOOGLE_APPLICATION_CREDENTIALS = os.path.join(BASE_DIR, "core/alameed-google-json.json")
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS

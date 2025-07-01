@@ -18,6 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
 from rest_framework.routers import DefaultRouter
 
 from src.apps.rental.api.viewsets import RentalViewSet
@@ -54,6 +55,7 @@ router.register(r'services/upholstery/car-models', UpholsteryCarModelsViewSet, b
 router.register(r'services/upholstery/material-types', UpholsteryMaterialTypesViewSet, basename='api-material-types')
 router.register(r'services/car-listings', CarListingViewSet, basename='car-listing')
 router.register(r'services/car-comparison', VehicleComparisonViewSet, basename='vehicle-comparison')
+router.register('alerts/devices', FCMDeviceAuthorizedViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
