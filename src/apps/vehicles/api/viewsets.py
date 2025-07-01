@@ -28,8 +28,9 @@ class BrandViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     """
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [filters.SearchFilter,DjangoFilterBackend]
     search_fields = ['name', 'description']
+    filterset_fields = ["primary"]
 
     @action(detail=True, methods=['get'])
     def vehicles(self, request, pk=None):
