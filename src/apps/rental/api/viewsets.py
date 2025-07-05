@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
@@ -113,7 +114,10 @@ class RentalViewSet(viewsets.ModelViewSet):
 
 class RentalRequestsViewSet(viewsets.ModelViewSet):
     serializer_class = RentalDetailSerializer
-
+    filter_backends = [DjangoFilterBackend,]
+    filterset_fields = [
+        "user"
+    ]
     def get_queryset(self):
         """
         All users can see rentals they created
