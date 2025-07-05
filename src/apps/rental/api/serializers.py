@@ -21,7 +21,7 @@ class RentalCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rental
         fields = [
-            'customer_data', 'vehicle', 'start_date', 'end_date'
+            'customer_data', 'vehicle', 'start_date', 'end_date',"inspection_form",
         ]
 
     def create(self, validated_data):
@@ -78,11 +78,11 @@ class RentalDetailSerializer(serializers.ModelSerializer):
         model = Rental
         fields = [
             'id', 'customer_data', 'vehicle', 'user', 'start_date', 'end_date',
-            'status', 'total_price', 'created_at', 'updated_at'
+            'status', 'total_price', 'created_at', 'updated_at',"inspection_form",
         ]
 
 
 class RentalUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rental
-        fields = ['status']
+        fields = ['status',"inspection_form",]
