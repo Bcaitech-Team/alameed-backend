@@ -80,6 +80,7 @@ class VehicleViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         if not self.request.user.is_staff:
             return Vehicle.objects.exclude(staff_only=True)
+        return Vehicle.objects.all()
 
     def get_serializer_class(self):
         if self.action == 'list':
