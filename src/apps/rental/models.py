@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -33,7 +34,7 @@ class RentalStatus(models.TextChoices):
 class Rental(models.Model):
     customer_data = models.ForeignKey(CustomerData, on_delete=models.CASCADE, related_name='rentals')
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='rentals')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_rentals')
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='created_rentals')
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     status = models.CharField(

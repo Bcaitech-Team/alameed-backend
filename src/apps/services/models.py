@@ -392,7 +392,7 @@ class CarListing(models.Model):
     seller_email = models.EmailField(blank=True, null=True, verbose_name='البريد الإلكتروني')
 
     # System Fields
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,

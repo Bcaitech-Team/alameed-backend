@@ -1,4 +1,5 @@
 # Create your models here.
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -125,7 +126,7 @@ class InquiryData(models.Model):
 
 class FavoriteVehicle(models.Model):
     """Model to track user's favorite vehicles"""
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='favorite_vehicles', null=True)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='favorite_vehicles', null=True)
     vehicles = models.ManyToManyField(Vehicle, related_name='favorited_by')
 
     def __str__(self):

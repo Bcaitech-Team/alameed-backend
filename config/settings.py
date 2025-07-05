@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "fcm_django",
 
     # Local apps
+    'src.apps.users',
     'src.apps.vehicles',
     'src.apps.reviews',
     'src.apps.services',
@@ -259,7 +260,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
-# AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = 'users.CustomUser'
 
 
 # ==============================================================================
