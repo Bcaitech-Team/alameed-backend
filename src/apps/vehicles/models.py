@@ -88,6 +88,7 @@ class Vehicle(models.Model):
     contract_type = models.CharField(_("Contract Type"), max_length=20,
                                      choices=(("sell", "Sell"), ("rent", "Rent"), ("rent_to_own", "Rent to Own")),
                                      default="rent")
+    staff_only = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-created_at']
