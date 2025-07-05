@@ -1,5 +1,6 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
+from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework.response import Response
 
 from .serializers import (
@@ -20,6 +21,7 @@ class CustomerDataViewSet(viewsets.ModelViewSet):
 
 
 class RentalViewSet(viewsets.ModelViewSet):
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
 
     def get_queryset(self):
         """
