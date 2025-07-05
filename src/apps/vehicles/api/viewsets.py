@@ -279,3 +279,7 @@ class StatisticsAPIView(APIView):
 class VehiclePriceViewSet(viewsets.ModelViewSet):
     queryset = VehiclePrice.objects.all()
     serializer_class = VehiclePriceSerializer
+    filter_backends = [DjangoFilterBackend,]
+    filterset_fields = [
+        "vehicle"
+    ]
