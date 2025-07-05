@@ -77,6 +77,9 @@ class VehicleViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     search_fields = ['model', 'color', 'brand__name']
     ordering_fields = ['price', 'year', 'created_at']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+    def get_queryset(self):
+        if not self.request.user.is_staff:
+            return Vehicle.objects.exclude(staff_only=True)
 
     def get_serializer_class(self):
         if self.action == 'list':
