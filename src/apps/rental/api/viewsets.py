@@ -107,3 +107,14 @@ class RentalViewSet(viewsets.ModelViewSet):
         rental.save()
         serializer = RentalDetailSerializer(rental)
         return Response(serializer.data)
+
+
+class RentalRequestsViewSet(viewsets.ModelViewSet):
+    serializer_class = RentalDetailSerializer
+
+    def get_queryset(self):
+        """
+        All users can see rentals they created
+        """
+        return Rental.objects.all()
+
