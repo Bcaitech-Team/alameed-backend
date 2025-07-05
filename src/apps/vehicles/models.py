@@ -1,6 +1,7 @@
 # Create your models here.
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -96,6 +97,11 @@ class Vehicle(models.Model):
 
     def __str__(self):
         return f"{self.brand} {self.model} {self.year}"
+    @property
+    def current_price(self):
+        today = timezone.now().date()
+        price_entry = self.prices.filter(start_date__lte=today).order_by('-start_date').first()
+        return price_entry.price if price_entry else self.price
 
 
 class VehicleImage(models.Model):
@@ -131,3 +137,16 @@ class FavoriteVehicle(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class VehiclePrice(models.Model):
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='prices')
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    start_date = models.DateField()
+
+    class Meta:
+        ordering = ['-start_date']
+        unique_together = ('vehicle', 'start_date')  # 🚫 same vehicle same date
+
+    def __str__(self):
+        return f"{self.vehicle.name} - {self.price} from {self.start_date}"

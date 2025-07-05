@@ -15,9 +15,9 @@ from .serializers import (
     VehicleDetailSerializer,
     VehicleCreateUpdateSerializer,
     VehicleImageSerializer,
-    InquiryDataSerializer, FavoriteVehicleSerializer
+    InquiryDataSerializer, FavoriteVehicleSerializer, VehiclePriceSerializer
 )
-from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle
+from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle, VehiclePrice
 from ...reviews.models import VehicleReview
 
 
@@ -274,3 +274,7 @@ class StatisticsAPIView(APIView):
         }
 
         return Response(stats)
+
+class VehiclePriceViewSet(viewsets.ModelViewSet):
+    queryset = VehiclePrice.objects.all()
+    serializer_class = VehiclePriceSerializer

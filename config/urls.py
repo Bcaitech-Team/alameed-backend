@@ -29,13 +29,14 @@ from src.apps.services.api.viewsets import UpholsteryMaterialViewSet, Upholstery
     VehicleComparisonViewSet
 from src.apps.support.api.viewsets import TicketViewSet, ChatMessageViewSet, ContactMessageViewSet
 from src.apps.vehicles.api.viewsets import BrandViewSet, FeatureViewSet, VehicleTypeViewSet, VehicleImageViewSet, \
-    VehicleViewSet, InquiryDataViewSet, FavoriteVehicleViewSet, StatisticsAPIView
+    VehicleViewSet, InquiryDataViewSet, FavoriteVehicleViewSet, StatisticsAPIView, VehiclePriceViewSet
 
 router = DefaultRouter()
 router.register('vehicles/brands', BrandViewSet)
 router.register('vehicles/vehicle-types', VehicleTypeViewSet)
 router.register('vehicles/features', FeatureViewSet)
 router.register('vehicles/vehicles', VehicleViewSet)
+router.register('vehicles/vehicle-prices', VehiclePriceViewSet)
 router.register('vehicles/vehicle-images', VehicleImageViewSet)
 router.register('vehicles/inquiries', InquiryDataViewSet)
 router.register('vehicles/favorite', FavoriteVehicleViewSet, basename='favorite-vehicle')

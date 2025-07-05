@@ -1,6 +1,7 @@
+from django.utils import timezone
 from rest_framework import serializers
 
-from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle
+from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle, VehiclePrice
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -59,7 +60,10 @@ class VehicleListSerializer(serializers.ModelSerializer):
         if primary_image:
             return primary_image.image.url
         return None
-
+    def to_representation(self, instance):
+        data= super().to_representation(instance)
+        data["current_price"] = instance.current_price
+        return data
 
 class VehicleDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for vehicle with all related information"""
@@ -74,6 +78,11 @@ class VehicleDetailSerializer(serializers.ModelSerializer):
         extra_fields = [
             'brand_details', 'features_list', 'images', 'inquiry_data_details'
         ]
+
+    def to_representation(self, instance):
+        data= super().to_representation(instance)
+        data["current_price"] = instance.current_price
+        return data
 
 
 class VehicleCreateUpdateSerializer(serializers.ModelSerializer):
@@ -204,3 +213,28 @@ class FavoriteVehicleSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['vehicles'] = VehicleListSerializer(instance.vehicles, many=True).data
         return representation
+
+
+class VehiclePriceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehiclePrice
+        fields = ['id', 'vehicle', 'price', 'start_date']
+
+    def validate_start_date(self, value):
+        today = timezone.now().date()
+        if value < today:
+            raise serializers.ValidationError("Start date cannot be in the past.")
+        return value
+
+    def validate(self, data):
+        vehicle = data.get('vehicle')
+        start_date = data.get('start_date')
+
+        # When updating, exclude current instance
+        qs = VehiclePrice.objects.filter(vehicle=vehicle, start_date=start_date)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+
+        if qs.exists():
+            raise serializers.ValidationError("Price for this vehicle already exists on this date.")
+        return data
