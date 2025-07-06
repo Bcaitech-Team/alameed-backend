@@ -416,7 +416,7 @@ class CarListingViewSet(viewsets.ModelViewSet):
     serializer_class = CarListingSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['fuel_type', 'transmission', 'year', 'status', 'body_condition', 'previous_owners_count']
+    filterset_fields = ['fuel_type', 'transmission', 'year', 'status', 'body_condition', 'previous_owners_count',"user"]
     search_fields = ['brand_model', 'color', 'seller_name', 'accessories']
     ordering_fields = ['created_at', 'price', 'year', 'mileage']
     ordering = ['-created_at']

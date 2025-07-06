@@ -385,6 +385,7 @@ class CarListing(models.Model):
         validators=[MinValueValidator(0)],
         verbose_name='السعر المطلوب'
     )
+    price_negotiable = models.BooleanField(default=False, verbose_name='السعر قابل للتفاوض')
 
     # Contact Information
     seller_name = models.CharField(max_length=200, verbose_name='اسم البائع')

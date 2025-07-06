@@ -258,7 +258,7 @@ class CarListingSerializer(serializers.ModelSerializer):
             'id', 'brand_model', 'year', 'mileage', 'fuel_type', 'transmission',
             'color', 'previous_accidents', 'previous_owners_count', 'body_condition',
             'accessories', 'accessories_list', 'price', 'seller_name', 'seller_phone',
-            'seller_email', 'status', 'created_at', 'updated_at', 'images', 'uploaded_images'
+            'seller_email', 'status', 'created_at', 'updated_at', 'images', 'uploaded_images',"price_negotiable"
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'accessories_list']
 
