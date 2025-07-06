@@ -60,7 +60,7 @@ router.register(r'services/car-listings', CarListingViewSet, basename='car-listi
 router.register(r'services/car-comparison', VehicleComparisonViewSet, basename='vehicle-comparison')
 router.register(r'services/car-comparison', VehicleComparisonViewSet, basename='vehicle-comparison')
 router.register('alerts/devices', FCMDeviceAuthorizedViewSet)
-router.register('users/users-', UsersViewSet, basename='users')
+router.register('users/users', UsersViewSet, basename='users')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
