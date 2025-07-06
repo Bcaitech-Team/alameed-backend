@@ -58,7 +58,6 @@ router.register(r'services/upholstery/car-models', UpholsteryCarModelsViewSet, b
 router.register(r'services/upholstery/material-types', UpholsteryMaterialTypesViewSet, basename='api-material-types')
 router.register(r'services/car-listings', CarListingViewSet, basename='car-listing')
 router.register(r'services/car-comparison', VehicleComparisonViewSet, basename='vehicle-comparison')
-router.register(r'services/car-comparison', VehicleComparisonViewSet, basename='vehicle-comparison')
 router.register('alerts/devices', FCMDeviceAuthorizedViewSet)
 router.register('users/users', UsersViewSet, basename='users')
 
