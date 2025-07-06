@@ -28,6 +28,7 @@ from src.apps.services.api.viewsets import UpholsteryMaterialViewSet, Upholstery
     BookingImageViewSet, UpholsteryMaterialTypesViewSet, UpholsteryCarModelsViewSet, CarListingViewSet, \
     VehicleComparisonViewSet
 from src.apps.support.api.viewsets import TicketViewSet, ChatMessageViewSet, ContactMessageViewSet
+from src.apps.users.api.viewsets import UsersViewSet
 from src.apps.vehicles.api.viewsets import BrandViewSet, FeatureViewSet, VehicleTypeViewSet, VehicleImageViewSet, \
     VehicleViewSet, InquiryDataViewSet, FavoriteVehicleViewSet, StatisticsAPIView, VehiclePriceViewSet
 
@@ -57,7 +58,9 @@ router.register(r'services/upholstery/car-models', UpholsteryCarModelsViewSet, b
 router.register(r'services/upholstery/material-types', UpholsteryMaterialTypesViewSet, basename='api-material-types')
 router.register(r'services/car-listings', CarListingViewSet, basename='car-listing')
 router.register(r'services/car-comparison', VehicleComparisonViewSet, basename='vehicle-comparison')
+router.register(r'services/car-comparison', VehicleComparisonViewSet, basename='vehicle-comparison')
 router.register('alerts/devices', FCMDeviceAuthorizedViewSet)
+router.register('users/users-', UsersViewSet, basename='users')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
