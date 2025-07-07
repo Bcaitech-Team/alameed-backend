@@ -1,6 +1,7 @@
+from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, transaction
 
 from src.apps.vehicles.models import Vehicle
 
@@ -21,6 +22,17 @@ class CustomerData(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class Installment(models.Model):
+    rental = models.ForeignKey('Rental', on_delete=models.CASCADE, related_name='installments')
+    due_date = models.DateField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    is_paid = models.BooleanField(default=False)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='installments')
+
+    def __str__(self):
+        return f"Installment for {self.rental} due on {self.due_date}"
 
 
 class RentalStatus(models.TextChoices):
@@ -65,6 +77,39 @@ class Rental(models.Model):
 
             self.status = RentalStatus.ACTIVE  # Automatically set to active for staff users
         super().save(*args, **kwargs)
+        # Create installments if not already created
+        if (not self.user.is_staff) and (not self.installments.exists()):
+            total_days = (self.end_date - self.start_date).days
+            full_months = total_days // 30
+            remaining_days = total_days % 30
 
+            with transaction.atomic():
+                if full_months == 0:
+                    # Less than a month -> one installment
+                    Installment.objects.create(
+                        rental=self,
+                        due_date=self.start_date.date(),
+                        amount=self.total_price,
+                        user=self.user,
+                    )
+                else:
+                    # Monthly installments
+                    monthly_amount = (self.total_price / total_days) * 30
+                    remaining_amount = self.total_price - (monthly_amount * full_months)
 
+                    due_date = self.start_date
+                    for i in range(full_months):
+                        Installment.objects.create(
+                            rental=self,
+                            due_date=(due_date + relativedelta(months=i)).date(),
+                            amount=monthly_amount,
+                            user=self.user,
 
+                        )
+                    if remaining_days > 0:
+                        Installment.objects.create(
+                            rental=self,
+                            due_date=(due_date + relativedelta(months=full_months)).date(),
+                            amount=remaining_amount,
+                            user=self.user,
+                        )

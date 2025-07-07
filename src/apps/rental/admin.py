@@ -106,10 +106,13 @@ class RentalAdmin(admin.ModelAdmin):
 
     def customer_name(self, obj):
         """Display customer name with link to customer detail"""
-        url = reverse('admin:your_app_customerdata_change', args=[obj.customer_data.id])
-        return format_html('<a href="{}">{}</a>', url,
-                           obj.customer_data.full_name if hasattr(obj.customer_data, 'full_name') else str(
-                               obj.customer_data))
+        try:
+            url = reverse('admin:your_app_customerdata_change', args=[obj.customer_data.id])
+            return format_html('<a href="{}">{}</a>', url,
+                               obj.customer_data.full_name if hasattr(obj.customer_data, 'full_name') else str(
+                                   obj.customer_data))
+        except:
+            return "No Customer Data Available"
 
     customer_name.short_description = 'Customer'
 

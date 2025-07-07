@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ..models import CustomerData, Rental
+from ..models import CustomerData, Rental, Installment
 from ...users.api.serializers import SimpleUserSerializer
 from ...vehicles.api.serializers import VehicleDetailSerializer
 
@@ -14,6 +14,10 @@ class CustomerDataSerializer(serializers.ModelSerializer):
             'id_front_photo', 'id_back_photo', 'created_at', 'updated_at'
         ]
 
+class InstallmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Installment
+        fields = ['id', 'due_date', 'amount', 'is_paid']
 
 class RentalCreateSerializer(serializers.ModelSerializer):
     customer_data = CustomerDataSerializer()
@@ -99,13 +103,17 @@ class RentalDetailSerializer(serializers.ModelSerializer):
     customer_data = CustomerDataSerializer(read_only=True)
     vehicle = VehicleDetailSerializer(read_only=True)
     user = SimpleUserSerializer(read_only=True)
+    installments = InstallmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Rental
         fields = [
-            'id', 'customer_data', 'vehicle', 'user', 'start_date', 'end_date',
-            'status', 'total_price', 'created_at', 'updated_at',"inspection_form",
+            'id', 'customer_data', 'vehicle', 'user',
+            'start_date', 'end_date', 'status', 'total_price',
+            'created_at', 'updated_at', 'inspection_form',
+            'installments',
         ]
+
 
 
 class RentalUpdateSerializer(serializers.ModelSerializer):
