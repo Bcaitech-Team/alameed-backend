@@ -59,7 +59,10 @@ class Rental(models.Model):
             # Calculate total price using the vehicle's daily rate
             self.total_price = self.vehicle.price * days
         if self.user.is_staff:
-            self.vehicle.is_available = False  # Mark vehicle as unavailable for staff-created rentals
+            vehicle = self.vehicle
+            vehicle.is_available = False  # Mark vehicle as unavailable for staff-created rentals
+            vehicle.save()
+
             self.status = RentalStatus.ACTIVE  # Automatically set to active for staff users
         super().save(*args, **kwargs)
 
