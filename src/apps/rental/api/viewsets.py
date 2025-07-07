@@ -8,7 +8,7 @@ from .serializers import (
     CustomerDataSerializer,
     RentalCreateSerializer,
     RentalDetailSerializer,
-    RentalUpdateSerializer
+    RentalUpdateSerializer, StaffRentalCreateSerializer
 )
 from ..models import CustomerData, Rental
 
@@ -23,6 +23,9 @@ class CustomerDataViewSet(viewsets.ModelViewSet):
 
 class RentalViewSet(viewsets.ModelViewSet):
     parser_classes = [JSONParser, FormParser, MultiPartParser]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['user__is_staff']
+
 
     def get_queryset(self):
         """
@@ -32,7 +35,10 @@ class RentalViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == 'create':
-            return RentalCreateSerializer
+            if self.request.user.is_staff:
+                return StaffRentalCreateSerializer
+            else:
+                return RentalCreateSerializer
         elif self.action in ['update', 'partial_update']:
             return RentalUpdateSerializer
         return RentalDetailSerializer
@@ -116,7 +122,7 @@ class RentalRequestsViewSet(viewsets.ModelViewSet):
     serializer_class = RentalDetailSerializer
     filter_backends = [DjangoFilterBackend,]
     filterset_fields = [
-        "user"
+        "user","user__is_staff"
     ]
     def get_queryset(self):
         """

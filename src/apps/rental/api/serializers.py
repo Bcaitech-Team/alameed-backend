@@ -68,6 +68,32 @@ class RentalCreateSerializer(serializers.ModelSerializer):
 
         return data
 
+class StaffRentalCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Rental
+        fields = [
+             'vehicle', 'start_date', 'end_date',
+        ]
+
+    def validate(self, data):
+        """
+        Check if the vehicle is available for the requested dates
+        """
+        vehicle = data['vehicle']
+        start_date = data['start_date']
+        end_date = data['end_date']
+
+        # Check if end date is after start date
+        if end_date < start_date:
+            raise serializers.ValidationError({"end_date": "End date must be after start date"})
+
+        if vehicle.is_available is False:
+            raise serializers.ValidationError(
+                {"vehicle": "This vehicle is not available for the selected dates"}
+            )
+
+        return data
 
 class RentalDetailSerializer(serializers.ModelSerializer):
     customer_data = CustomerDataSerializer(read_only=True)

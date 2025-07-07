@@ -91,6 +91,7 @@ class Vehicle(models.Model):
                                      choices=(("sell", "Sell"), ("rent", "Rent"), ("rent_to_own", "Rent to Own")),
                                      default="rent")
     staff_only = models.BooleanField(default=False)
+    is_available = models.BooleanField(_("Available"), default=True)
 
     class Meta:
         ordering = ['-created_at']

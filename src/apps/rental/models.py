@@ -32,7 +32,7 @@ class RentalStatus(models.TextChoices):
 
 
 class Rental(models.Model):
-    customer_data = models.ForeignKey(CustomerData, on_delete=models.CASCADE, related_name='rentals')
+    customer_data = models.ForeignKey(CustomerData, on_delete=models.CASCADE, related_name='rentals', null=True, blank=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='rentals')
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='created_rentals')
     start_date = models.DateTimeField()
@@ -58,4 +58,10 @@ class Rental(models.Model):
             days = delta.days + (1 if delta.seconds > 0 else 0)  # Count partial day as full day
             # Calculate total price using the vehicle's daily rate
             self.total_price = self.vehicle.price * days
+        if self.user.is_staff:
+            self.vehicle.is_available = False  # Mark vehicle as unavailable for staff-created rentals
+            self.status = RentalStatus.ACTIVE  # Automatically set to active for staff users
         super().save(*args, **kwargs)
+
+
+
