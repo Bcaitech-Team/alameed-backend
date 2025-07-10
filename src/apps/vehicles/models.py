@@ -92,6 +92,20 @@ class Vehicle(models.Model):
                                      default="rent")
     staff_only = models.BooleanField(default=False)
     is_available = models.BooleanField(_("Available"), default=True)
+    price_lt_month = models.DecimalField(_("Price < 1 Month"), max_digits=10, decimal_places=2, default=0.00)
+    price_month = models.DecimalField(_("Price / Month"), max_digits=10, decimal_places=2, default=0.00)
+    price_gt_3mo = models.DecimalField(_("Price > 3 Months"), max_digits=10, decimal_places=2, default=0.00)
+    price_negotiable = models.BooleanField(default=False, verbose_name='السعر قابل للتفاوض')
+    status= models.CharField(_("Status"), max_length=20, choices=[
+        ('available', 'Available'),
+        ('sold', 'Sold'),
+        ('rented', 'Rented'),
+    ], default='available')
+    available_units = models.PositiveIntegerField(
+        _("Available Units"),
+        default=1,
+        help_text=_("Number of identical vehicles available for rent.")
+    )
 
     class Meta:
         ordering = ['-created_at']
@@ -103,6 +117,15 @@ class Vehicle(models.Model):
         today = timezone.now().date()
         price_entry = self.prices.filter(start_date__lte=today).order_by('-start_date').first()
         return price_entry.price if price_entry else self.price
+
+    def save(
+        self, *args, **kwargs):
+        if self.price_lt_month == 0:
+            self.price_lt_month = self.price
+        if self.price_month == 0:
+            self.price_lt_month = self.price
+        if self.price_gt_3mo == 0:
+            self.price_lt_month = self.price
 
 
 class VehicleImage(models.Model):

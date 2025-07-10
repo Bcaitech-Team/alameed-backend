@@ -65,19 +65,44 @@ class Rental(models.Model):
     def save(self, *args, **kwargs):
         # Calculate total price before saving if not explicitly set
         if not self.total_price and self.vehicle and self.start_date and self.end_date:
-            # Calculate the number of days
             delta = self.end_date - self.start_date
-            days = delta.days + (1 if delta.seconds > 0 else 0)  # Count partial day as full day
-            # Calculate total price using the vehicle's daily rate
-            self.total_price = self.vehicle.price * days
-        if self.user.is_staff:
-            vehicle = self.vehicle
-            vehicle.is_available = False  # Mark vehicle as unavailable for staff-created rentals
-            vehicle.save()
+            total_days = delta.days + (1 if delta.seconds > 0 else 0)
 
-            self.status = RentalStatus.ACTIVE  # Automatically set to active for staff users
+            if total_days < 30:
+                daily_rate = self.vehicle.price_lt_month / 30
+                self.total_price = daily_rate * total_days
+            elif 30 <= total_days <= 90:
+                months = total_days / 30
+                self.total_price = self.vehicle.price_month * months
+            else:
+                months = total_days / 30
+                self.total_price = self.vehicle.price_gt_3mo * months
+
+        vehicle = self.vehicle
+
+        # If staff, auto-activate rental
+        if self.user.is_staff:
+            self.status = RentalStatus.ACTIVE
+
+        # If this rental is newly becoming active
+        if self.pk is None or not Rental.objects.filter(pk=self.pk, status=RentalStatus.ACTIVE).exists():
+            if self.status == RentalStatus.ACTIVE:
+                # Reduce available_units by 1
+                if vehicle.available_units > 0:
+                    vehicle.available_units -= 1
+
+                    # If no more units, mark vehicle as rented
+                    if vehicle.available_units <= 0:
+                        vehicle.status = 'rented'
+                        vehicle.is_available = False  # Optional: keep this consistent
+
+                    vehicle.save()
+                else:
+                    raise ValueError("No available units left for this vehicle.")
+
         super().save(*args, **kwargs)
-        # Create installments if not already created
+
+        # Create installments if not staff and not already created
         if (not self.user.is_staff) and (not self.installments.exists()):
             total_days = (self.end_date - self.start_date).days
             full_months = total_days // 30
@@ -85,7 +110,6 @@ class Rental(models.Model):
 
             with transaction.atomic():
                 if full_months == 0:
-                    # Less than a month -> one installment
                     Installment.objects.create(
                         rental=self,
                         due_date=self.start_date.date(),
@@ -93,7 +117,6 @@ class Rental(models.Model):
                         user=self.user,
                     )
                 else:
-                    # Monthly installments
                     monthly_amount = (self.total_price / total_days) * 30
                     remaining_amount = self.total_price - (monthly_amount * full_months)
 
@@ -104,7 +127,6 @@ class Rental(models.Model):
                             due_date=(due_date + relativedelta(months=i)).date(),
                             amount=monthly_amount,
                             user=self.user,
-
                         )
                     if remaining_days > 0:
                         Installment.objects.create(
