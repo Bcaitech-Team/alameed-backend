@@ -1,7 +1,8 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle, VehiclePrice
+from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle, VehiclePrice, \
+    VehiclePriceTier
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -238,3 +239,9 @@ class VehiclePriceSerializer(serializers.ModelSerializer):
         if qs.exists():
             raise serializers.ValidationError("Price for this vehicle already exists on this date.")
         return data
+
+
+class VehiclePriceTierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehiclePriceTier
+        fields = ['id', 'vehicle', 'min_days', 'max_days', 'price_per_day']

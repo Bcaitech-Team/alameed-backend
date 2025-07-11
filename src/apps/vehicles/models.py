@@ -92,9 +92,6 @@ class Vehicle(models.Model):
                                      default="rent")
     staff_only = models.BooleanField(default=False)
     is_available = models.BooleanField(_("Available"), default=True)
-    price_lt_month = models.DecimalField(_("Price < 1 Month"), max_digits=10, decimal_places=2, default=0.00)
-    price_month = models.DecimalField(_("Price / Month"), max_digits=10, decimal_places=2, default=0.00)
-    price_gt_3mo = models.DecimalField(_("Price > 3 Months"), max_digits=10, decimal_places=2, default=0.00)
     price_negotiable = models.BooleanField(default=False, verbose_name='السعر قابل للتفاوض')
     status= models.CharField(_("Status"), max_length=20, choices=[
         ('available', 'Available'),
@@ -118,17 +115,6 @@ class Vehicle(models.Model):
         price_entry = self.prices.filter(start_date__lte=today).order_by('-start_date').first()
         return price_entry.price if price_entry else self.price
 
-    def save(
-        self, *args, **kwargs):
-
-        if self.price_lt_month == 0:
-            self.price_lt_month = self.price
-        if self.price_month == 0:
-            self.price_lt_month = self.price
-        if self.price_gt_3mo == 0:
-            self.price_lt_month = self.price
-
-        super().save(*args, **kwargs)
 
 
 class VehicleImage(models.Model):
@@ -177,3 +163,15 @@ class VehiclePrice(models.Model):
 
     def __str__(self):
         return f"{self.vehicle.name} - {self.price} from {self.start_date}"
+
+
+class VehiclePriceTier(models.Model):
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='price_tiers')
+    min_days = models.PositiveIntegerField(help_text="Minimum number of days for this price tier")
+    max_days = models.PositiveIntegerField(null=True, blank=True, help_text="Leave blank for no upper limit")
+    price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        if self.max_days:
+            return f"{self.vehicle} [{self.min_days}–{self.max_days} days]"
+        return f"{self.vehicle} [{self.min_days}+ days]"
