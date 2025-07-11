@@ -21,7 +21,7 @@ from django.urls import path, include
 from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
 from rest_framework.routers import DefaultRouter
 
-from src.apps.rental.api.viewsets import RentalViewSet,RentalRequestsViewSet
+from src.apps.rental.api.viewsets import RentalViewSet, RentalRequestsViewSet
 from src.apps.reviews.api.viewsets import VehicleReviewViewSet
 from src.apps.services.api.viewsets import UpholsteryMaterialViewSet, UpholsteryTypeViewSet, \
     UpholsteryGalleryImageViewSet, ServiceLocationViewSet, ServiceTimeSlotViewSet, UpholsteryBookingViewSet, \
@@ -30,7 +30,8 @@ from src.apps.services.api.viewsets import UpholsteryMaterialViewSet, Upholstery
 from src.apps.support.api.viewsets import TicketViewSet, ChatMessageViewSet, ContactMessageViewSet
 from src.apps.users.api.viewsets import UsersViewSet
 from src.apps.vehicles.api.viewsets import BrandViewSet, FeatureViewSet, VehicleTypeViewSet, VehicleImageViewSet, \
-    VehicleViewSet, InquiryDataViewSet, FavoriteVehicleViewSet, StatisticsAPIView, VehiclePriceViewSet
+    VehicleViewSet, InquiryDataViewSet, FavoriteVehicleViewSet, StatisticsAPIView, VehiclePriceViewSet, \
+    VehiclePriceTierViewSet
 
 router = DefaultRouter()
 router.register('vehicles/brands', BrandViewSet)
@@ -41,6 +42,7 @@ router.register('vehicles/vehicle-prices', VehiclePriceViewSet)
 router.register('vehicles/vehicle-images', VehicleImageViewSet)
 router.register('vehicles/inquiries', InquiryDataViewSet)
 router.register('vehicles/favorite', FavoriteVehicleViewSet, basename='favorite-vehicle')
+router.register(r'vehicles/price-tiers', VehiclePriceTierViewSet, basename='price-tier')
 router.register('reviews/vehicle-review', VehicleReviewViewSet)
 router.register('services/upholstery/materials', UpholsteryMaterialViewSet, basename='api-material')
 router.register('services/upholstery/types', UpholsteryTypeViewSet, basename='api-type')
