@@ -120,12 +120,15 @@ class Vehicle(models.Model):
 
     def save(
         self, *args, **kwargs):
+
         if self.price_lt_month == 0:
             self.price_lt_month = self.price
         if self.price_month == 0:
             self.price_lt_month = self.price
         if self.price_gt_3mo == 0:
             self.price_lt_month = self.price
+
+        super().save(*args, **kwargs)
 
 
 class VehicleImage(models.Model):
