@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models, transaction
 from django.db.models import Q
 
+from src.apps.alerts.models import Notification
 from src.apps.vehicles.models import Vehicle
 
 
@@ -105,6 +106,7 @@ class Rental(models.Model):
 
         super().save(*args, **kwargs)
 
+
         # Create installments if not staff and not already created
         if not self.user.is_staff and not self.installments.exists():
             full_months = total_days // 30
@@ -137,3 +139,18 @@ class Rental(models.Model):
                             amount=remaining_amount,
                             user=self.user,
                         )
+        next_installment = self.installments.filter(
+        ).order_by('due_date').first()
+        print(f"Next installment: {next_installment}")
+
+        if next_installment:
+            Notification.objects.create(
+                user=self.user,
+                title="تم تأجير المركبة",
+                message=(
+                    f"تم تأجير المركبة بنجاح.\n"
+                    f"يرجى العلم أن القسط الأول مستحق بتاريخ {next_installment.due_date} "
+                    f"بمبلغ قدره {next_installment.amount} دينار.\n"
+                    "شكرًا لاختياركم خدمتنا ونتمنى لكم تجربة قيادة آمنة."
+                )
+            )

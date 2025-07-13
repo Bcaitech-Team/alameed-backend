@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.mixins import AdminOnlyMixin
+from core.utilis import send_notification_email
 from .serializers import (
     BrandSerializer,
     VehicleTypeSerializer,
@@ -79,6 +80,9 @@ class VehicleViewSet(AdminOnlyMixin, viewsets.ModelViewSet):
     ordering_fields = ['price', 'year', 'created_at']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     def get_queryset(self):
+        send_notification_email("hello", "email.html", {
+            "message": "Hello from Alameed"
+        }, ["tahaghazt164@gmail.com"])
         if not self.request.user.is_staff:
             return Vehicle.objects.exclude(staff_only=True)
         return Vehicle.objects.all()
