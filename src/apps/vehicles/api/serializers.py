@@ -71,13 +71,24 @@ class VehicleDetailSerializer(serializers.ModelSerializer):
     features_list = FeatureSerializer(source='features', many=True, read_only=True)
     images = VehicleImageListSerializer(many=True, read_only=True)
     inquiry_data_details = InquiryDataSerializer(source='inquiry_data', read_only=True)
+    staff_renters = serializers.SerializerMethodField()
 
     class Meta:
         model = Vehicle
         fields = '__all__'
         extra_fields = [
-            'brand_details', 'features_list', 'images', 'inquiry_data_details'
+            'brand_details', 'features_list', 'images', 'inquiry_data_details',"staff_renters"
         ]
+
+    def get_staff_renters(self, obj):
+        """Return staff names if vehicle is staff only and rented"""
+        if obj.staff_only and obj.status == 'rented':
+            staff_rentals = obj.rentals.filter(user__is_staff=True)
+            return [
+                rental.user.get_full_name() or rental.user.username
+                for rental in staff_rentals
+            ]
+        return []
 
     def to_representation(self, instance):
         data= super().to_representation(instance)
