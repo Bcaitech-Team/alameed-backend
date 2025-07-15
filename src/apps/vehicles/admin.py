@@ -98,12 +98,12 @@ class VehicleImageInline(admin.TabularInline):
 @admin.register(Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
     list_display = (
-        'vehicle_info', 'brand', 'year', 'price_display', 'condition',
+        'vehicle_info', 'brand', 'year', 'price_display',
         'mileage_display', 'status_indicators', 'primary_image_preview', 'created_at'
     )
     list_filter = (
-        'brand', 'year', 'condition', 'engine_type', 'transmission',
-        'is_featured', 'is_active', 'contract_type', 'created_at'
+        'brand', 'year', 'engine_type', 'transmission',
+        'is_featured', 'is_active', 'created_at'
     )
     search_fields = ('model', 'brand__name', 'color', 'body_type')
     readonly_fields = (
@@ -120,7 +120,7 @@ class VehicleAdmin(admin.ModelAdmin):
             'fields': ('brand', 'model', 'year', 'price', 'currency')
         }),
         ('Vehicle Details', {
-            'fields': ('body_type', 'color', 'mileage', 'condition')
+            'fields': ('body_type', 'color', 'mileage')
         }),
         ('Technical Specifications', {
             'fields': (
@@ -134,7 +134,7 @@ class VehicleAdmin(admin.ModelAdmin):
         }),
         ('Status & Settings', {
             'fields': (
-                'is_active', 'is_featured', 'is_negotiable', 'contract_type'
+                'is_active', 'is_featured', 'is_negotiable'
             )
         }),
         ('Insurance & Registration', {
@@ -158,7 +158,7 @@ class VehicleAdmin(admin.ModelAdmin):
     # Custom actions
     actions = [
         'mark_as_featured', 'unmark_as_featured', 'mark_as_active',
-        'mark_as_inactive', 'mark_contract_type', 'unmark_contract_type'
+        'mark_as_inactive',
     ]
 
     def vehicle_info(self, obj):
@@ -184,9 +184,6 @@ class VehicleAdmin(admin.ModelAdmin):
         if obj.is_featured:
             indicators.append(
                 '<span style="background: #ffc107; color: #000; padding: 2px 6px; border-radius: 3px; font-size: 11px;">FEATURED</span>')
-        if obj.contract_type:
-            indicators.append(
-                '<span style="background: #17a2b8; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 11px;">RENT</span>')
         if obj.is_negotiable:
             indicators.append(
                 '<span style="background: #28a745; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 11px;">NEGO</span>')
@@ -272,17 +269,7 @@ class VehicleAdmin(admin.ModelAdmin):
 
     mark_as_inactive.short_description = 'Mark selected vehicles as inactive'
 
-    def mark_contract_type(self, request, queryset):
-        updated = queryset.update(contract_type=True)
-        self.message_user(request, f'{updated} vehicle(s) marked for rent.')
 
-    mark_contract_type.short_description = 'Mark selected vehicles for rent'
-
-    def unmark_contract_type(self, request, queryset):
-        updated = queryset.update(contract_type=False)
-        self.message_user(request, f'{updated} vehicle(s) unmarked for rent.')
-
-    unmark_contract_type.short_description = 'Unmark selected vehicles for rent'
 
     # Override get_queryset for better performance
     def get_queryset(self, request):

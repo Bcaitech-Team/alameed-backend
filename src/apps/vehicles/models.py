@@ -66,11 +66,17 @@ class Vehicle(models.Model):
     seats = models.PositiveSmallIntegerField(_("Number of Seats"))
 
     # Status and Condition
-    condition = models.CharField(_("Condition"), max_length=20, choices=[
+    # condition = models.CharField(_("Condition"), max_length=20, choices=[
+    #     ('new', 'New'),
+    #     ('used', 'Used'),
+    #     ('certified', 'Certified Pre-owned')
+    # ])
+    type = models.CharField(_("Vehicle Type"), max_length=20, choices=[
         ('new', 'New'),
         ('used', 'Used'),
-        ('certified', 'Certified Pre-owned')
-    ])
+        ('rent_to_own', 'Rent to Own'),
+        ("rent", "Rent"),
+    ], default='used')
 
     # Insurance and Registration
     insurance_expiry = models.DateField(_("Insurance Expiry"), blank=True, null=True)
@@ -87,9 +93,9 @@ class Vehicle(models.Model):
     is_featured = models.BooleanField(_("Featured"), default=False)
     is_active = models.BooleanField(_("Active"), default=True)
     is_negotiable = models.BooleanField(_("Negotiable"), default=False)
-    contract_type = models.CharField(_("Contract Type"), max_length=20,
-                                     choices=(("sell", "Sell"), ("rent", "Rent"), ("rent_to_own", "Rent to Own")),
-                                     default="rent")
+    # contract_type = models.CharField(_("Contract Type"), max_length=20,
+    #                                  choices=(("sell", "Sell"), ("rent", "Rent"), ("rent_to_own", "Rent to Own")),
+    #                                  default="rent")
     staff_only = models.BooleanField(default=False)
     is_available = models.BooleanField(_("Available"), default=True)
     price_lt_month = models.DecimalField(_("Price < 1 Month"), max_digits=10, decimal_places=2, default=0.00)
