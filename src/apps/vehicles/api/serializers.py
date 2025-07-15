@@ -53,8 +53,8 @@ class VehicleListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'brand', 'brand_name', 'model', 'year', 'price', 'currency',
             'body_type', 'color', 'mileage', 'engine_type', 'transmission',
-            'condition', 'is_featured', 'primary_image', "is_negotiable", "created_at", "contract_type", "staff_only",
-            "is_available", "status", "available_units",
+             'is_featured', 'primary_image', "is_negotiable", "created_at", "contract_type", "staff_only",
+            "is_available", "status", "available_units","type"
         ]
 
     def get_primary_image(self, obj):
