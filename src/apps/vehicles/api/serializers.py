@@ -1,7 +1,8 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle, VehiclePrice
+from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle, VehiclePrice, \
+    VehiclePriceTier
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -52,7 +53,8 @@ class VehicleListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'brand', 'brand_name', 'model', 'year', 'price', 'currency',
             'body_type', 'color', 'mileage', 'engine_type', 'transmission',
-            'type', 'is_featured', 'primary_image', "is_negotiable", "created_at","staff_only","is_available","price_lt_month","price_month", "price_gt_3mo","status","available_units",
+            'condition', 'is_featured', 'primary_image', "is_negotiable", "created_at", "contract_type", "staff_only",
+            "is_available", "status", "available_units",
         ]
 
     def get_primary_image(self, obj):
@@ -71,38 +73,25 @@ class VehicleDetailSerializer(serializers.ModelSerializer):
     features_list = FeatureSerializer(source='features', many=True, read_only=True)
     images = VehicleImageListSerializer(many=True, read_only=True)
     inquiry_data_details = InquiryDataSerializer(source='inquiry_data', read_only=True)
-    staff_renters = serializers.SerializerMethodField()
 
     class Meta:
         model = Vehicle
         fields = '__all__'
         extra_fields = [
-            'brand_details', 'features_list', 'images', 'inquiry_data_details',"staff_renters"
+            'brand_details', 'features_list', 'images', 'inquiry_data_details'
         ]
-
-    def get_staff_renters(self, obj):
-        """Return staff names if vehicle is staff only and rented"""
-        if obj.staff_only and obj.status == 'rented':
-            staff_rentals = obj.rentals.filter(user__is_staff=True)
-            return [
-                rental.user.get_full_name() or rental.user.username
-                for rental in staff_rentals
-            ]
-        return []
 
     def to_representation(self, instance):
         data= super().to_representation(instance)
         data["current_price"] = instance.current_price
         return data
 
-
 class VehicleCreateUpdateSerializer(serializers.ModelSerializer):
     """Serializer for creating and updating vehicles with images"""
     images = serializers.ListField(
         child=serializers.ImageField(),
         write_only=True,
-        required=True,
-        min_length=1,  # Enforce at least one image
+        required=False,  # required=False lets PATCH skip this field
     )
     captions = serializers.ListField(
         child=serializers.CharField(required=False, allow_blank=True),
@@ -121,45 +110,46 @@ class VehicleCreateUpdateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        """Validate that images are provided and primary_image_index is valid"""
-        images = data.get('images', [])
+        """Validate only if images are provided or on create"""
+        images = data.get('images', None)
         primary_index = data.get('primary_image_index', 0)
 
-        if not images:
-            raise serializers.ValidationError({"images": "At least one image is required."})
+        if self.instance is None:
+            # CREATE (POST)
+            if not images:
+                raise serializers.ValidationError({"images": "At least one image is required."})
+        else:
+            # UPDATE (PATCH/PUT)
+            if images is not None and not images:
+                raise serializers.ValidationError({"images": "At least one image is required."})
 
-        if primary_index >= len(images):
-            raise serializers.ValidationError(
-                {"primary_image_index": f"Primary image index must be less than {len(images)}"}
-            )
+        if images is not None:
+            if primary_index >= len(images):
+                raise serializers.ValidationError(
+                    {"primary_image_index": f"Primary image index must be less than {len(images)}"}
+                )
 
-        # Ensure captions match the number of images if provided
-        captions = data.get('captions', [])
-        if captions and len(captions) != len(images):
-            raise serializers.ValidationError(
-                {"captions": f"Number of captions ({len(captions)}) must match number of images ({len(images)})"}
-            )
+            captions = data.get('captions', [])
+            if captions and len(captions) != len(images):
+                raise serializers.ValidationError(
+                    {"captions": f"Number of captions ({len(captions)}) must match number of images ({len(images)})"}
+                )
 
         return data
 
     def create(self, validated_data):
         """Create vehicle and associated images"""
-        # Extract image data
         images = validated_data.pop('images', [])
         captions = validated_data.pop('captions', [])
         primary_index = validated_data.pop('primary_image_index', 0)
 
-        # Extract features if present (handle many-to-many relationship)
         features = validated_data.pop('features', None)
 
-        # Create the vehicle instance
         vehicle = Vehicle.objects.create(**validated_data)
 
-        # Handle many-to-many relationship for features
         if features is not None:
             vehicle.features.set(features)
 
-        # Create vehicle images
         for i, image_data in enumerate(images):
             caption = captions[i] if i < len(captions) else ""
             VehicleImage.objects.create(
@@ -173,29 +163,22 @@ class VehicleCreateUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """Update vehicle and handle image updates if provided"""
-        # Extract image data if present
         images = validated_data.pop('images', None)
         captions = validated_data.pop('captions', [])
         primary_index = validated_data.pop('primary_image_index', 0)
 
-        # Extract features if present (handle many-to-many relationship)
         features = validated_data.pop('features', None)
 
-        # Update the vehicle instance with the remaining data
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        # Handle many-to-many relationship for features
         if features is not None:
             instance.features.set(features)
 
-        # If images are provided, handle them
         if images is not None:
-            # Optionally, delete existing images
-            # instance.images.all().delete()  # Uncomment if you want to replace all images
-
-            # Create new vehicle images
+            # If you want to replace old images, you can uncomment this:
+            # instance.images.all().delete()
             for i, image_data in enumerate(images):
                 caption = captions[i] if i < len(captions) else ""
                 VehicleImage.objects.create(
@@ -249,3 +232,9 @@ class VehiclePriceSerializer(serializers.ModelSerializer):
         if qs.exists():
             raise serializers.ValidationError("Price for this vehicle already exists on this date.")
         return data
+
+
+class VehiclePriceTierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehiclePriceTier
+        fields = ['id', 'vehicle', 'min_days', 'max_days', 'price_per_day']

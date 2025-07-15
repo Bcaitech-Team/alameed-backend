@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'src.apps.services',
     'src.apps.support',
     'src.apps.rental',
+    'src.apps.alerts',
 
 ]
 
@@ -93,7 +94,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates", ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -227,6 +228,7 @@ ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
 ACCOUNT_UNIQUE_EMAIL = True
 
 ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
 
 # =========================================================
 # EMAIL SETTINGS
@@ -276,3 +278,16 @@ initialize_app()
 
 GOOGLE_APPLICATION_CREDENTIALS = os.path.join(BASE_DIR, "core/alameed-google-json.json")
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
+
+# ==============================================================================
+# EMAIL SETTINGS
+# ==============================================================================
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 2525
+# EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'alameednoreply@gmail.com'  # Replace with your email
+EMAIL_HOST_PASSWORD = 'TechnoLogy021#b'  # Replace with your password
+DEFAULT_FROM_EMAIL = 'alameednoreply@gmail.com'  # Replace with your from email

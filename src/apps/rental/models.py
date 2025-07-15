@@ -2,7 +2,9 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.db import models, transaction
+from django.db.models import Q
 
+from src.apps.alerts.models import Notification
 from src.apps.vehicles.models import Vehicle
 
 
@@ -43,6 +45,7 @@ class RentalStatus(models.TextChoices):
     CANCELLED = 'cancelled', 'Cancelled'
 
 
+
 class Rental(models.Model):
     customer_data = models.ForeignKey(CustomerData, on_delete=models.CASCADE, related_name='rentals', null=True, blank=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='rentals')
@@ -63,20 +66,21 @@ class Rental(models.Model):
         return f"{self.customer_data} - {self.vehicle} ({self.start_date} to {self.end_date})"
 
     def save(self, *args, **kwargs):
-        # Calculate total price before saving if not explicitly set
-        if not self.total_price and self.vehicle and self.start_date and self.end_date:
-            delta = self.end_date - self.start_date
-            total_days = delta.days + (1 if delta.seconds > 0 else 0)
+        delta = self.end_date - self.start_date
+        total_days = delta.days + (1 if delta.seconds > 0 else 0)
 
-            if total_days < 30:
-                daily_rate = self.vehicle.price_lt_month / 30
-                self.total_price = daily_rate * total_days
-            elif 30 <= total_days <= 90:
-                months = total_days / 30
-                self.total_price = self.vehicle.price_month * months
+        if not self.total_price and self.vehicle and self.start_date and self.end_date:
+            # Try to find a matching price tier first
+            price_tier = self.vehicle.price_tiers.filter(
+                min_days__lte=total_days
+            ).filter(
+                Q(max_days__gte=total_days) | Q(max_days__isnull=True)
+            ).order_by('min_days').first()
+
+            if price_tier:
+                self.total_price = price_tier.price_per_day * total_days
             else:
-                months = total_days / 30
-                self.total_price = self.vehicle.price_gt_3mo * months
+                self.total_price = self.vehicle.price * total_days
 
         vehicle = self.vehicle
 
@@ -85,26 +89,26 @@ class Rental(models.Model):
             self.status = RentalStatus.ACTIVE
 
         # If this rental is newly becoming active
-        if self.pk is None or not Rental.objects.filter(pk=self.pk, status=RentalStatus.ACTIVE).exists():
-            if self.status == RentalStatus.ACTIVE:
-                # Reduce available_units by 1
-                if vehicle.available_units > 0:
-                    vehicle.available_units -= 1
+        is_new = self.pk is None
+        already_active = not is_new and Rental.objects.filter(pk=self.pk, status=RentalStatus.ACTIVE).exists()
 
-                    # If no more units, mark vehicle as rented
-                    if vehicle.available_units <= 0:
-                        vehicle.status = 'rented'
-                        vehicle.is_available = False  # Optional: keep this consistent
+        if (is_new or not already_active) and self.status == RentalStatus.ACTIVE:
+            if vehicle.available_units > 0:
+                vehicle.available_units -= 1
 
-                    vehicle.save()
-                else:
-                    raise ValueError("No available units left for this vehicle.")
+                if vehicle.available_units <= 0:
+                    vehicle.status = 'rented'
+                    vehicle.is_available = False
+
+                vehicle.save()
+            else:
+                raise ValueError("No available units left for this vehicle.")
 
         super().save(*args, **kwargs)
 
+
         # Create installments if not staff and not already created
-        if (not self.user.is_staff) and (not self.installments.exists()):
-            total_days = (self.end_date - self.start_date).days
+        if not self.user.is_staff and not self.installments.exists():
             full_months = total_days // 30
             remaining_days = total_days % 30
 
@@ -135,3 +139,18 @@ class Rental(models.Model):
                             amount=remaining_amount,
                             user=self.user,
                         )
+        next_installment = self.installments.filter(
+        ).order_by('due_date').first()
+        print(f"Next installment: {next_installment}")
+
+        if next_installment:
+            Notification.objects.create(
+                user=self.user,
+                title="تم تأجير المركبة",
+                message=(
+                    f"تم تأجير المركبة بنجاح.\n"
+                    f"يرجى العلم أن القسط الأول مستحق بتاريخ {next_installment.due_date} "
+                    f"بمبلغ قدره {next_installment.amount} دينار.\n"
+                    "شكرًا لاختياركم خدمتنا ونتمنى لكم تجربة قيادة آمنة."
+                )
+            )

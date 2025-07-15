@@ -2,7 +2,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -15,9 +15,10 @@ from .serializers import (
     VehicleDetailSerializer,
     VehicleCreateUpdateSerializer,
     VehicleImageSerializer,
-    InquiryDataSerializer, FavoriteVehicleSerializer, VehiclePriceSerializer
+    InquiryDataSerializer, FavoriteVehicleSerializer, VehiclePriceSerializer, VehiclePriceTierSerializer
 )
-from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle, VehiclePrice
+from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle, VehiclePrice, \
+    VehiclePriceTier
 from ...reviews.models import VehicleReview
 
 
@@ -283,3 +284,15 @@ class VehiclePriceViewSet(viewsets.ModelViewSet):
     filterset_fields = [
         "vehicle"
     ]
+
+
+# views.py
+
+
+class VehiclePriceTierViewSet(viewsets.ModelViewSet):
+    queryset = VehiclePriceTier.objects.all()
+    serializer_class = VehiclePriceTierSerializer
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['vehicle']  # 👈 Enables ?vehicle=<vehicle_id>
+    permission_classes = [IsAuthenticatedOrReadOnly]

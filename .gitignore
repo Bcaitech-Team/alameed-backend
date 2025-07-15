@@ -45,3 +45,4 @@ htmlcov/
 *.pytest_cache/
 .pytest_cache/
 debug.log
+secrets
