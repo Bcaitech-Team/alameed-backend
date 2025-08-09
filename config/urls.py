@@ -28,7 +28,7 @@ from src.apps.services.api.viewsets import UpholsteryMaterialViewSet, Upholstery
     BookingImageViewSet, UpholsteryMaterialTypesViewSet, UpholsteryCarModelsViewSet, CarListingViewSet, \
     VehicleComparisonViewSet
 from src.apps.support.api.viewsets import TicketViewSet, ChatMessageViewSet, ContactMessageViewSet
-from src.apps.users.api.viewsets import UsersViewSet
+from src.apps.users.api.viewsets import UsersViewSet, PermissionsViewSet, UserPermissionsViewSet
 from src.apps.vehicles.api.viewsets import BrandViewSet, FeatureViewSet, VehicleTypeViewSet, VehicleImageViewSet, \
     VehicleViewSet, InquiryDataViewSet, FavoriteVehicleViewSet, StatisticsAPIView, VehiclePriceViewSet, \
     VehiclePriceTierViewSet
@@ -62,6 +62,7 @@ router.register(r'services/car-listings', CarListingViewSet, basename='car-listi
 router.register(r'services/car-comparison', VehicleComparisonViewSet, basename='vehicle-comparison')
 router.register('alerts/devices', FCMDeviceAuthorizedViewSet)
 router.register('users/users', UsersViewSet, basename='users')
+router.register('users/permissions', PermissionsViewSet, basename='permissions')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -70,6 +71,7 @@ urlpatterns = [
     path('api/authentication/', include('dj_rest_auth.urls')),
     path('api/authentication/registration/', include('dj_rest_auth.registration.urls')),
     path('api/vehicles/statistics/', StatisticsAPIView.as_view(), name='statistics'),
+    path('api/users/',include("src.apps.users.urls")),
 
 ]
 if settings.DEBUG:

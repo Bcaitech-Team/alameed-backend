@@ -1,14 +1,12 @@
-from rest_framework import serializers
 from allauth.account import app_settings as allauth_settings
 from allauth.account.adapter import get_adapter
 from allauth.account.utils import setup_user_email
 from allauth.utils import email_address_exists
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User, Group, Permission
 from django.contrib.auth.password_validation import validate_password
-from rest_auth.serializers import LoginSerializer
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
@@ -90,3 +88,52 @@ class SimpleUserSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = ['id', 'username', 'first_name', 'last_name', 'email']
         read_only_fields = ['id', 'username', 'email']
+
+
+
+
+class AssignPermissionsSerializer(serializers.Serializer):
+    # target_type = serializers.ChoiceField(choices=['user', 'group'])
+    target_id = serializers.IntegerField()
+    permissions = serializers.ListField(
+        child=serializers.CharField(max_length=100),
+        allow_empty=False
+    )
+    action = serializers.ChoiceField(choices=['add', 'remove'], default='add')
+
+    def validate(self, data):
+        # target_type = data['target_type']
+        target_type = 'user'  # Assuming we are always dealing with users for simplicity
+        target_id = data['target_id']
+
+        # Validate target exists
+        if target_type == 'user':
+            try:
+                get_user_model().objects.get(id=target_id)
+            except  get_user_model().DoesNotExist:
+                raise serializers.ValidationError("User not found")
+        elif target_type == 'group':
+            try:
+                Group.objects.get(id=target_id)
+            except Group.DoesNotExist:
+                raise serializers.ValidationError("Group not found")
+
+        return data
+
+
+class ModelPermissionsSerializer(serializers.Serializer):
+    target_type = serializers.ChoiceField(choices=['user', 'group'])
+    target_id = serializers.IntegerField()
+    app_label = serializers.CharField(max_length=100)
+    model_name = serializers.CharField(max_length=100)
+    permission_types = serializers.ListField(
+        child=serializers.ChoiceField(choices=['add', 'change', 'delete', 'view']),
+        default=['add', 'change', 'delete', 'view']
+    )
+    action = serializers.ChoiceField(choices=['add', 'remove'], default='add')
+
+class PermissionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = "__all__"
+
