@@ -1,18 +1,14 @@
 from django.contrib.auth import get_user_model
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
-from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-from rest_framework.response import Response
-
-from src.apps.users.api.serializers import UserDetailsSerializer, PermissionsSerializer
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
+from rest_framework import viewsets, permissions
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from src.apps.users.api.serializers import UserDetailsSerializer, PermissionsSerializer
 from .serializers import AssignPermissionsSerializer, ModelPermissionsSerializer
 
 
@@ -53,12 +49,12 @@ class AssignPermissionsAPIView(APIView):
             )
 
         data = serializer.validated_data
-        target_id = data['target_id']
+        user_id = data['user_id']
         permissions = data['permissions']
         action = data['action']
 
         # Get target object
-        target = get_user_model().objects.get(id=target_id)
+        target = get_user_model().objects.get(id=user_id)
 
 
         # Process permissions
@@ -80,9 +76,37 @@ class AssignPermissionsAPIView(APIView):
 
         return Response({
             "message": f"Permissions {action}ed successfully",
-            "target_id": target_id,
+            "target_id": user_id,
             "assigned_permissions": assigned_permissions,
         }, status=status.HTTP_200_OK)
+
+
+class AddSuperUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+
+        if not user_id:
+            return Response(
+                {"error": "User ID is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = get_user_model().objects.get(id=user_id)
+            user.is_superuser = not user.is_superuser
+            user.is_staff = not user.is_staff
+            user.save()
+            return Response(
+                {"message": f"User {user.username} superuser status updated successfully to {user.is_superuser}"}
+            )
+        except get_user_model().DoesNotExist:
+            return Response(
+                {"error": "User not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
 
 
 class ModelPermissionsAPIView(APIView):

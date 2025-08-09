@@ -3,7 +3,7 @@ from allauth.account.adapter import get_adapter
 from allauth.account.utils import setup_user_email
 from allauth.utils import email_address_exists
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User, Group, Permission
+from django.contrib.auth.models import Permission
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -94,7 +94,7 @@ class SimpleUserSerializer(serializers.ModelSerializer):
 
 class AssignPermissionsSerializer(serializers.Serializer):
     # target_type = serializers.ChoiceField(choices=['user', 'group'])
-    target_id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
     permissions = serializers.ListField(
         child=serializers.CharField(max_length=100),
         allow_empty=False
@@ -102,21 +102,14 @@ class AssignPermissionsSerializer(serializers.Serializer):
     action = serializers.ChoiceField(choices=['add', 'remove'], default='add')
 
     def validate(self, data):
-        # target_type = data['target_type']
-        target_type = 'user'  # Assuming we are always dealing with users for simplicity
-        target_id = data['target_id']
+        user_id = data['user_id']
 
         # Validate target exists
-        if target_type == 'user':
-            try:
-                get_user_model().objects.get(id=target_id)
-            except  get_user_model().DoesNotExist:
-                raise serializers.ValidationError("User not found")
-        elif target_type == 'group':
-            try:
-                Group.objects.get(id=target_id)
-            except Group.DoesNotExist:
-                raise serializers.ValidationError("Group not found")
+        try:
+            get_user_model().objects.get(id=user_id)
+        except  get_user_model().DoesNotExist:
+            raise serializers.ValidationError("User not found")
+
 
         return data
 
