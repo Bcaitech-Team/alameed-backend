@@ -1,6 +1,7 @@
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
 from django.db.models import Q
 
@@ -154,3 +155,20 @@ class Rental(models.Model):
                     "شكرًا لاختياركم خدمتنا ونتمنى لكم تجربة قيادة آمنة."
                 )
             )
+
+
+def create_rental_perms():
+    content_type = ContentType.objects.get_for_model(Rental)
+    # permissions = [
+    #     ('custom_rent', 'Can view rental'),
+    #     ('custom_rent_to_own', 'Can change rental'),
+    # ]
+    # for codename, name in permissions:
+    try:
+        Permission.objects.get_or_create(
+            codename="custom_rent_to_own",
+            name="Rent to own",
+            content_type=content_type
+        )
+    except Exception as e:
+        print("Permission already exists or another error occurred.")

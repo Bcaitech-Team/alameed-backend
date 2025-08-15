@@ -202,7 +202,7 @@ class PermissionsViewSet(viewsets.ModelViewSet):
     """
     ViewSet for listing all permissions.
     """
-    queryset = Permission.objects.all()
+    queryset = Permission.objects.filter(codename__in=("view_carlisting", "view_rental", "custom_rent_to_own"))
     serializer_class = PermissionsSerializer
     permission_classes = [permissions.IsAdminUser]
     filter_backends = [DjangoFilterBackend]
