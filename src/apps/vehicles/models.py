@@ -181,3 +181,12 @@ class VehiclePriceTier(models.Model):
         if self.max_days:
             return f"{self.vehicle} [{self.min_days}–{self.max_days} days]"
         return f"{self.vehicle} [{self.min_days}+ days]"
+
+
+class VehicleRequest(models.Model):
+    vehicle_name = models.CharField(_("Vehicle Name"), max_length=255)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='vehicle_requests')
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Request for {self.vehicle_name} by {self.user.username} on {self.date.strftime('%Y-%m-%d %H:%M:%S')}"

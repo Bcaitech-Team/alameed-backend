@@ -28,10 +28,10 @@ from src.apps.services.api.viewsets import UpholsteryMaterialViewSet, Upholstery
     BookingImageViewSet, UpholsteryMaterialTypesViewSet, UpholsteryCarModelsViewSet, CarListingViewSet, \
     VehicleComparisonViewSet
 from src.apps.support.api.viewsets import TicketViewSet, ChatMessageViewSet, ContactMessageViewSet
-from src.apps.users.api.viewsets import UsersViewSet, PermissionsViewSet, UserPermissionsViewSet
+from src.apps.users.api.viewsets import UsersViewSet, PermissionsViewSet
 from src.apps.vehicles.api.viewsets import BrandViewSet, FeatureViewSet, VehicleTypeViewSet, VehicleImageViewSet, \
     VehicleViewSet, InquiryDataViewSet, FavoriteVehicleViewSet, StatisticsAPIView, VehiclePriceViewSet, \
-    VehiclePriceTierViewSet
+    VehiclePriceTierViewSet, VehicleRequestViewSet
 
 router = DefaultRouter()
 router.register('vehicles/brands', BrandViewSet)
@@ -43,6 +43,7 @@ router.register('vehicles/vehicle-images', VehicleImageViewSet)
 router.register('vehicles/inquiries', InquiryDataViewSet)
 router.register('vehicles/favorite', FavoriteVehicleViewSet, basename='favorite-vehicle')
 router.register(r'vehicles/price-tiers', VehiclePriceTierViewSet, basename='price-tier')
+router.register(r'vehicles/vehicle-request', VehicleRequestViewSet, basename='vehicle-request')
 router.register('reviews/vehicle-review', VehicleReviewViewSet)
 router.register('services/upholstery/materials', UpholsteryMaterialViewSet, basename='api-material')
 router.register('services/upholstery/types', UpholsteryTypeViewSet, basename='api-type')

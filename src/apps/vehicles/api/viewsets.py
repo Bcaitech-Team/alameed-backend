@@ -15,10 +15,11 @@ from .serializers import (
     VehicleDetailSerializer,
     VehicleCreateUpdateSerializer,
     VehicleImageSerializer,
-    InquiryDataSerializer, FavoriteVehicleSerializer, VehiclePriceSerializer, VehiclePriceTierSerializer
+    InquiryDataSerializer, FavoriteVehicleSerializer, VehiclePriceSerializer, VehiclePriceTierSerializer,
+    VehicleRequestSerializer
 )
 from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle, VehiclePrice, \
-    VehiclePriceTier
+    VehiclePriceTier, VehicleRequest
 from ...reviews.models import VehicleReview
 
 
@@ -296,3 +297,14 @@ class VehiclePriceTierViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['vehicle']  # 👈 Enables ?vehicle=<vehicle_id>
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class VehicleRequestViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for VehicleRequest model
+    """
+    queryset = VehicleRequest.objects.all()
+    serializer_class = VehicleRequestSerializer
+
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)

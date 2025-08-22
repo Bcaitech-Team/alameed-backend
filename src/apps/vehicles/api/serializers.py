@@ -2,7 +2,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from ..models import Brand, VehicleType, Feature, Vehicle, VehicleImage, InquiryData, FavoriteVehicle, VehiclePrice, \
-    VehiclePriceTier
+    VehiclePriceTier, VehicleRequest
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -248,3 +248,17 @@ class VehiclePriceTierSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehiclePriceTier
         fields = ['id', 'vehicle', 'min_days', 'max_days', 'price_per_day']
+
+
+class VehicleRequestSerializer(serializers.ModelSerializer):
+    """Main serializer for Vehicle model"""
+
+    class Meta:
+        model = VehicleRequest
+        fields = '__all__'
+        read_only_fields = ['user']
+
+    def save(self, **kwargs):
+        """Override save to set user"""
+        kwargs['user'] = self.context['request'].user
+        super().save(**kwargs)
