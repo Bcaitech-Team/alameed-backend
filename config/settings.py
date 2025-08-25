@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     'corsheaders',
     "fcm_django",
+    'django_crontab',
 
     # Local apps
     'src.apps.users',
@@ -291,3 +292,8 @@ EMAIL_PORT = 2525
 EMAIL_HOST_USER = 'alameednoreply@gmail.com'  # Replace with your email
 EMAIL_HOST_PASSWORD = 'TechnoLogy021#b'  # Replace with your password
 DEFAULT_FROM_EMAIL = 'alameednoreply@gmail.com'  # Replace with your from email
+
+CRONJOBS = [
+    # run every day at 9 AM
+    ('0 9 * * *', 'src.apps.orders.cron.send_installment_notifications'),
+]
