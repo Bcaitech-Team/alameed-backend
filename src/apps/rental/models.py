@@ -109,7 +109,7 @@ class Rental(models.Model):
 
 
         # Create installments if not staff and not already created
-        if not self.user.is_staff and not self.installments.exists():
+        if not self.installments.exists():
             full_months = total_days // 30
             remaining_days = total_days % 30
 
