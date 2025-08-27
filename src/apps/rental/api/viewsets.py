@@ -218,3 +218,37 @@ class RentalRequestsViewSet(viewsets.ModelViewSet):
         All users can see rentals they created
         """
         return Rental.objects.all()
+
+    @action(detail=True, methods=['post'])
+    def send_payment_notification(self, request, pk=None):
+        """
+        Send payment notification to the user of this rental
+        """
+        rental = self.get_object()
+        installments = rental.installments.all().order_by('due_date')
+
+        if not installments.exists():
+            return Response(
+                {"detail": "No installments found for this rental"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # By default notify about the next unpaid installment
+        next_installment = installments.filter(is_paid=False).order_by('due_date').first()
+        if not next_installment:
+            next_installment = installments.last()  # fallback to last installment
+
+        Notification.objects.create(
+            user=rental.user,
+            title="تذكير بدفع القسط",
+            message=(
+                f"يرجى دفع القسط المستحق بتاريخ {next_installment.due_date} "
+                f"بمبلغ قدره {next_installment.amount} دينار.\n"
+                "شكرًا لاختياركم خدمتنا."
+            )
+        )
+
+        return Response(
+            {"detail": "Payment notification sent successfully"},
+            status=status.HTTP_200_OK
+        )
